@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
@@ -37,5 +37,26 @@ export class AuthService {
       : `${user.clientProtocol}://${user.clientHost}/login/callback?token=${token}&backUrl=${user.register_uri}`;
 
     res.redirect(redirectTo);
+  }
+
+  extractTokenFromHeader(header: string) {
+    const splitToken = header.split(' ');
+
+    if (splitToken.length !== 2 || splitToken[0] !== 'Bearer')
+      throw new UnauthorizedException('잘못된 토큰입니다');
+
+    const token = splitToken[1];
+    return token;
+  }
+
+  // 토큰 검증
+  verifyToken(token: string) {
+    try {
+      return this.jwtService.verify(token, {
+        secret: this.configService.get(ENV_JWT_SECRET_KEY),
+      });
+    } catch {
+      throw new UnauthorizedException('토큰이 만료되었거나 잘못된 토큰입니다.');
+    }
   }
 }
