@@ -27,7 +27,7 @@ export class InvitationModel extends BaseModel {
   @Column({ type: 'jsonb' })
   location: IInvitationLocation;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'jsonb', nullable: true })
   design: IInvitationDesign;
 
   @OneToMany(() => InvitationOwnerModel, (owner) => owner.invitation)
@@ -41,10 +41,10 @@ export class InvitationModel extends BaseModel {
   @ManyToMany(() => ImageModel, (image) => image.invitations)
   images: ImageModel[];
 
-  @Column()
+  @Column({ nullable: true })
   fullDaySchedule: boolean;
 
-  @Column()
+  @Column({ nullable: true })
   editingExpired: boolean;
 
   @Column({ type: 'jsonb', nullable: true })
