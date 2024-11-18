@@ -137,4 +137,10 @@ export class InvitationService {
       },
     });
   }
+
+  // 초대장 삭제
+  async deleteInvitation(id: string) {
+    await this.invitationRepository.delete(id);
+    return true;
+  }
 }

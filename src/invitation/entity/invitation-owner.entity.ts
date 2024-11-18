@@ -12,6 +12,7 @@ export class InvitationOwnerModel extends BaseModel {
 
   @ManyToOne(() => InvitationModel, (invitation) => invitation.owners, {
     cascade: true,
+    onDelete: 'CASCADE',
   })
   invitation: InvitationModel;
 }

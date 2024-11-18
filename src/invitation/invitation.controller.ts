@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -38,6 +39,10 @@ export class InvitationController {
     return {
       id: result.id,
     };
+  }
+  @Delete(':id')
+  async deleteInvitation(@Param('id') id: string) {
+    return this.invitationService.deleteInvitation(id);
   }
 
   @Put(':id/event-info')
