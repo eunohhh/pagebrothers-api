@@ -5,12 +5,22 @@ import {
   IInvitationLocation,
   IInvitationShare,
 } from 'src/common/type/common.type';
-import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
+import { UsersModel } from 'src/users/entity/users.entity';
+import { Column, Entity, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 import { InvitationOwnerModel } from './invitation-owner.entity';
 import { WidgetItemModel } from './widget-item.entity';
 
 @Entity()
 export class InvitationModel extends BaseModel {
+  @ManyToOne(() => UsersModel, (user) => user.invitations)
+  user: UsersModel;
+
+  @Column({ nullable: true })
+  title: string;
+
+  @Column({ nullable: true })
+  templateId: string;
+
   @Column()
   eventAt: Date;
 
@@ -39,4 +49,7 @@ export class InvitationModel extends BaseModel {
 
   @Column({ type: 'jsonb', nullable: true })
   share: IInvitationShare | null;
+
+  @Column({ nullable: true })
+  customDomain: string | null;
 }
