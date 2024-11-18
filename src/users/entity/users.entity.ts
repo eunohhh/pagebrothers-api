@@ -1,4 +1,4 @@
-import { Provider } from 'src/common/const/provider.const';
+import { Providers } from 'src/common/const/provider.const';
 import { BaseModel } from 'src/common/entity/base.entity';
 import { Column, Entity } from 'typeorm';
 
@@ -19,7 +19,13 @@ export class UsersModel extends BaseModel {
 
   @Column({
     type: 'enum',
-    enum: Provider,
+    enum: Providers,
   })
-  provider: Provider;
+  provider: Providers;
+
+  @Column()
+  providerId: string;
+
+  @Column()
+  acceptMarketing: boolean;
 }

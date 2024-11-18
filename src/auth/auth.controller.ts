@@ -1,11 +1,17 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiExcludeController, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { IsPublic } from 'src/common/decorator/is-public.decorator';
 import { RequestWithUser } from 'src/common/type/common.type';
 import { AuthService } from './auth.service';
 import { ReqRes } from './decorator/req-res.decorator';
+import { RegisterUserDto } from './dto/register-user.dto';
 import { DynamicAuthGuard } from './guard/dynamic-auth.guard';
 
 @Controller('oauth2')
+@IsPublic()
+//swagger에 노출하고 싶지 않음
+@ApiExcludeController()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -18,6 +24,8 @@ export class AuthController {
 }
 
 @Controller('login/callback')
+@IsPublic()
+@ApiExcludeController()
 export class LoginController {
   constructor(private readonly authService: AuthService) {}
 
@@ -26,7 +34,8 @@ export class LoginController {
   async kakaoCallback(
     @ReqRes() { req, res }: { req: RequestWithUser; res: Response },
   ) {
-    return this.authService.callback({ req, res });
+    const result = await this.authService.callback({ req });
+    res.redirect(result.redirectTo);
   }
 
   @Get('google')
@@ -34,6 +43,20 @@ export class LoginController {
   async googleCallback(
     @ReqRes() { req, res }: { req: RequestWithUser; res: Response },
   ) {
-    return this.authService.callback({ req, res });
+    const result = await this.authService.callback({ req });
+    res.redirect(result.redirectTo);
+  }
+}
+
+@Controller('auth')
+@IsPublic()
+@ApiBearerAuth()
+@ApiTags('유저')
+export class RegisterController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Post('register')
+  async register(@Body() body: RegisterUserDto) {
+    return await this.authService.register(body);
   }
 }

@@ -6,13 +6,14 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from 'src/common/decorator/is-public.decorator';
+import { UsersService } from 'src/users/users.service';
 import { AuthService } from '../auth.service';
 
 @Injectable()
 export class BearerTokenGuard implements CanActivate {
   constructor(
     private readonly authService: AuthService,
-    // private readonly usersService: UsersService,
+    private readonly usersService: UsersService,
     private readonly reflector: Reflector,
   ) {}
 
@@ -34,12 +35,12 @@ export class BearerTokenGuard implements CanActivate {
     if (!rawToken) throw new UnauthorizedException('토큰이 없습니다!');
 
     const token = this.authService.extractTokenFromHeader(rawToken);
-    await this.authService.verifyToken(token);
+    const result = await this.authService.verifyToken(token);
 
-    // const user = await this.usersService.getUserByEmail(result.email);
+    const user = await this.usersService.getUserByEmail(result.email);
 
-    // req.user = user;
-    // req.token = token;
+    req.user = user;
+    req.token = token;
 
     return true;
   }
