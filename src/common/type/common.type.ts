@@ -3,6 +3,7 @@ import { Providers } from '../const/provider.const';
 
 export interface RequestWithUser extends Request {
   user: {
+    id: string;
     email: string;
     name: string;
     profileImage: string;

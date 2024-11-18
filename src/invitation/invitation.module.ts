@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from 'src/auth/auth.module';
 import { ImageModel } from 'src/common/entity/image.entity';
+import { UsersModule } from 'src/users/users.module';
 import { InvitationOwnerModel } from './entity/invitation-owner.entity';
 import { InvitationModel } from './entity/invitation.entity';
 import { WidgetConfigModel } from './entity/widget-config.entity';
@@ -17,6 +19,8 @@ import { InvitationService } from './invitation.service';
       WidgetConfigModel,
       WidgetItemModel,
     ]),
+    UsersModule,
+    AuthModule,
   ],
   exports: [InvitationService],
   controllers: [InvitationController],
