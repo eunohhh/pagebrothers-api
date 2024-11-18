@@ -26,6 +26,14 @@ export class LoginController {
   async kakaoCallback(
     @ReqRes() { req, res }: { req: RequestWithUser; res: Response },
   ) {
-    return this.authService.callbackKakao({ req, res });
+    return this.authService.callback({ req, res });
+  }
+
+  @Get('google')
+  @UseGuards(DynamicAuthGuard)
+  async googleCallback(
+    @ReqRes() { req, res }: { req: RequestWithUser; res: Response },
+  ) {
+    return this.authService.callback({ req, res });
   }
 }

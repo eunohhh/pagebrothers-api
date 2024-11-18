@@ -35,7 +35,8 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
       ? JSON.parse(decodeURIComponent(req.query.state))
       : {};
 
-    // state에서 프로토콜과 호스트 정보를 가져옴
+    // const clientProtocol = req.protocol;
+    // const clientHost = req.get('host');
     const clientProtocol = state.protocol;
     const clientHost = state.host;
     const redirectUri = state.redirect_uri;
@@ -43,6 +44,7 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
 
     // Kakao 사용자 정보를 반환
     const { id, username, _json } = profile;
+    const { thumbnail_image } = _json.properties;
     const { email } = _json.kakao_account;
 
     return {
@@ -50,6 +52,7 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
       providerId: id,
       username,
       email,
+      thumbnail_image,
       clientProtocol,
       clientHost,
       redirect_uri: redirectUri,

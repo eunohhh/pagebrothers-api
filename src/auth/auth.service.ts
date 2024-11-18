@@ -13,14 +13,18 @@ export class AuthService {
   ) {}
 
   generateJwt(user: any): string {
-    const payload = { sub: user.providerId, email: user.email };
+    const payload = {
+      sub: user.providerId,
+      email: user.email,
+      profile: user.thumbnail_image,
+    };
     return this.jwtService.sign(payload, {
       secret: this.configService.get(ENV_JWT_SECRET_KEY),
       expiresIn: '1h',
     });
   }
 
-  async callbackKakao({ req, res }: { req: RequestWithUser; res: Response }) {
+  async callback({ req, res }: { req: RequestWithUser; res: Response }) {
     const user = req.user;
     const token = this.generateJwt(user);
 
