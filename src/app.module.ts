@@ -15,6 +15,12 @@ import {
   ENV_DB_PORT_KEY,
   ENV_DB_USERNAME_KEY,
 } from './common/const/env-keys.const';
+import { ImageModel } from './common/entity/image.entity';
+import { InvitationOwnerModel } from './invitation/entity/invitation-owner.entity';
+import { InvitationModel } from './invitation/entity/invitation.entity';
+import { WidgetConfigModel } from './invitation/entity/widget-config.entity';
+import { WidgetItemModel } from './invitation/entity/widget-item.entity';
+import { InvitationModule } from './invitation/invitation.module';
 import { UsersModel } from './users/entity/users.entity';
 import { UsersModule } from './users/users.module';
 
@@ -32,12 +38,20 @@ import { UsersModule } from './users/users.module';
       username: process.env[ENV_DB_USERNAME_KEY],
       password: process.env[ENV_DB_PASSWORD_KEY],
       database: process.env[ENV_DB_DATABASE_KEY],
-      entities: [UsersModel],
+      entities: [
+        UsersModel,
+        InvitationModel,
+        InvitationOwnerModel,
+        ImageModel,
+        WidgetConfigModel,
+        WidgetItemModel,
+      ],
       synchronize: true,
     }),
     AuthModule,
     CommonModule,
     UsersModule,
+    InvitationModule,
   ],
   controllers: [AppController],
   providers: [
