@@ -1,7 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
+import { UpdateEventInfoDto } from './dto/update-event-info.dto';
 import { InvitationModel } from './entity/invitation.entity';
 
 @Injectable()
@@ -57,5 +62,23 @@ export class InvitationService {
     });
 
     return await this.invitationRepository.save(invitation);
+  }
+
+  async updateEventInfo(id: string, body: UpdateEventInfoDto) {
+    if (!id) throw new BadRequestException('초대장 아이디가 없습니다!');
+
+    const invitation = await this.invitationRepository.findOneBy({ id });
+
+    if (!invitation) throw new NotFoundException('초대장 정보가 없습니다!');
+
+    await this.invitationRepository.update(id, body);
+    return await this.invitationRepository.findOne({
+      where: { id },
+      relations: {
+        owners: true,
+        widgets: true,
+        images: true,
+      },
+    });
   }
 }
