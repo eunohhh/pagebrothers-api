@@ -7,6 +7,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
 import { UpdateEventInfoDto } from './dto/update-event-info.dto';
+import { UpdateOwnersDto } from './dto/update-owners.dto';
+import { InvitationOwnerModel } from './entity/invitation-owner.entity';
 import { InvitationModel } from './entity/invitation.entity';
 
 @Injectable()
@@ -14,8 +16,11 @@ export class InvitationService {
   constructor(
     @InjectRepository(InvitationModel)
     private readonly invitationRepository: Repository<InvitationModel>,
+    @InjectRepository(InvitationOwnerModel)
+    private readonly invitationOwnerRepository: Repository<InvitationOwnerModel>,
   ) {}
 
+  // 초대장 목록 조회
   async readInvitations(id: string) {
     if (!id) throw new BadRequestException('유저 아이디가 없습니다!');
 
@@ -35,8 +40,11 @@ export class InvitationService {
     return items;
   }
 
+  // 초대장 생성
   async createInvitation(id: string, body: CreateInvitationDto) {
     if (!id) throw new BadRequestException('유저 아이디가 없습니다!');
+
+    if (!body.owners) throw new BadRequestException('주인 정보가 없습니다!');
 
     const invitation = await this.invitationRepository.create({
       user: { id },
@@ -53,17 +61,31 @@ export class InvitationService {
         placeId: body.location.placeId ?? null,
         mapType: body.location.mapType ?? null,
       },
-      owners: body.owners.map((owner) => ({
-        id: owner.id ?? crypto.randomUUID(),
-        name: owner.name,
-        role: owner.role,
-      })),
       templateId: body.templateId ?? '3fa85f64-5717-4562-b3fc-2c963f66afa6',
     });
+    const savedInvitation = await this.invitationRepository.save(invitation);
 
-    return await this.invitationRepository.save(invitation);
+    const owners = body.owners.map((owner) => ({
+      name: owner.name,
+      role: owner.role,
+      invitation: {
+        id: savedInvitation.id,
+      },
+    }));
+
+    await this.invitationOwnerRepository.save(owners);
+
+    return await this.invitationRepository.findOne({
+      where: { id: savedInvitation.id },
+      relations: {
+        owners: true,
+        widgets: true,
+        images: true,
+      },
+    });
   }
 
+  // 초대장 이벤트 정보 수정
   async updateEventInfo(id: string, body: UpdateEventInfoDto) {
     if (!id) throw new BadRequestException('초대장 아이디가 없습니다!');
 
@@ -72,6 +94,40 @@ export class InvitationService {
     if (!invitation) throw new NotFoundException('초대장 정보가 없습니다!');
 
     await this.invitationRepository.update(id, body);
+    return await this.invitationRepository.findOne({
+      where: { id },
+      relations: {
+        owners: true,
+        widgets: true,
+        images: true,
+      },
+    });
+  }
+
+  // 초대장 주인(결혼식 당사자) 수정
+  async updateOwners(id: string, body: UpdateOwnersDto) {
+    if (!id) throw new BadRequestException('초대장 아이디가 없습니다!');
+
+    const invitation = await this.invitationRepository.findOneBy({ id });
+
+    if (!invitation) throw new NotFoundException('초대장 정보가 없습니다!');
+
+    if (!body.owners) throw new BadRequestException('주인 정보가 없습니다!');
+
+    const owners = body.owners.map((owner) => ({
+      name: owner.name,
+      role: owner.role,
+      invitation: {
+        id: invitation.id,
+      },
+    }));
+
+    // 그냥 save 하지말고 덮어쓰기
+    await this.invitationOwnerRepository.delete({
+      invitation: { id: invitation.id },
+    });
+    await this.invitationOwnerRepository.save(owners);
+
     return await this.invitationRepository.findOne({
       where: { id },
       relations: {
