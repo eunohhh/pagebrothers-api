@@ -85,4 +85,14 @@ export class InvitationController {
   async getVisitLogs(@Param('id') id: string) {
     return this.invitationService.readVisitLogs(id);
   }
+
+  @Put(':id/shares/visibility/on')
+  async putShareOn(@Param('id') id: string) {
+    return this.invitationService.createShareVisibilty(id);
+  }
+
+  @Put(':id/shares/visibility/off')
+  async putShareOff(@Param('id') id: string) {
+    return this.invitationService.offShareVisibilty(id);
+  }
 }

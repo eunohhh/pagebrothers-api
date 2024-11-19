@@ -15,6 +15,7 @@ import { InvitationMetaModel } from './entity/invitation-meta.entity';
 import { InvitationOwnerModel } from './entity/invitation-owner.entity';
 import { InvitationModel } from './entity/invitation.entity';
 import { VisitsCountModel } from './entity/visits-count.entity';
+import { transformDateString } from './util/transform-date-string.util';
 
 const relations = {
   owners: true,
@@ -46,6 +47,9 @@ export class InvitationService {
     const result = await this.invitationRepository.find({
       where: { user: { id } },
       relations,
+      order: {
+        createdAt: 'DESC',
+      },
     });
 
     return {
@@ -223,5 +227,26 @@ export class InvitationService {
     return await this.visitsCountRepository.find({
       where: { invitation: { id } },
     });
+  }
+
+  async createShareVisibilty(id: string) {
+    const invitation = await this.invitationRepository.findOneBy({ id });
+    if (!invitation) throw new NotFoundException('초대장 정보가 없습니다!');
+
+    const share = {
+      shareKey: transformDateString(invitation.eventAt.toISOString()),
+      visible: true,
+    };
+
+    await this.invitationRepository.update(id, { ...invitation, share });
+    return true;
+  }
+
+  async offShareVisibilty(id: string) {
+    const invitation = await this.invitationRepository.findOneBy({ id });
+    if (!invitation) throw new NotFoundException('초대장 정보가 없습니다!');
+
+    await this.invitationRepository.update(id, { ...invitation, share: null });
+    return true;
   }
 }
