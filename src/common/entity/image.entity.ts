@@ -2,7 +2,7 @@ import { Transform } from 'class-transformer';
 import { IsString } from 'class-validator';
 import { join } from 'path';
 import { InvitationModel } from 'src/invitation/entity/invitation.entity';
-import { WidgetConfigModel } from 'src/invitation/entity/widget-config.entity';
+import { WidgetConfigModel } from 'src/widget/entity/widget-config.entity';
 import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
 import { POST_PUBLIC_IMAGE_PATH } from '../const/path.const';
 import { BaseModel } from './base.entity';

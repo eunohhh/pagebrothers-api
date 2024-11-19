@@ -13,11 +13,11 @@ import {
   OneToMany,
   OneToOne,
 } from 'typeorm';
+import { WidgetItemModel } from '../../widget/entity/widget-item.entity';
 import { InvitationDesignModel } from './invitation-design.entity';
 import { InvitationMetaModel } from './invitation-meta.entity';
 import { InvitationOwnerModel } from './invitation-owner.entity';
 import { VisitsCountModel } from './visits-count.entity';
-import { WidgetItemModel } from './widget-item.entity';
 
 @Entity()
 export class InvitationModel extends BaseModel {

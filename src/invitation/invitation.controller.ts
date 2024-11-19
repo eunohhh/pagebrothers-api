@@ -8,10 +8,11 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ReqRes } from 'src/auth/decorator/req-res.decorator';
 import { BearerTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { RequestWithUser } from 'src/common/type/common.type';
+import { CreateWidgetDto } from 'src/widget/dto/create-widget.dto';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
 import { UpdateDesignDto } from './dto/update-design.dto';
 import { UpdateEventInfoDto } from './dto/update-event-info.dto';
@@ -20,6 +21,7 @@ import { UpdateOwnersDto } from './dto/update-owners.dto';
 import { InvitationService } from './invitation.service';
 
 @Controller('invitations')
+@ApiTags('청첩장')
 @UseGuards(BearerTokenGuard)
 export class InvitationController {
   constructor(private readonly invitationService: InvitationService) {}
@@ -115,5 +117,12 @@ export class InvitationController {
     @Param('id') id: string,
   ) {
     return this.invitationService.cloneInvitation(req.user.id, id);
+  }
+
+  @Post(':id/widgets')
+  @ApiTags('청첩장/위젯')
+  @ApiOperation({ summary: '위젯 추가', tags: ['청첩장/위젯'] })
+  async postWidget(@Param('id') id: string, @Body() body: CreateWidgetDto) {
+    return this.invitationService.createWidget(id, body);
   }
 }

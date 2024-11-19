@@ -21,11 +21,12 @@ import { InvitationMetaModel } from './invitation/entity/invitation-meta.entity'
 import { InvitationOwnerModel } from './invitation/entity/invitation-owner.entity';
 import { InvitationModel } from './invitation/entity/invitation.entity';
 import { VisitsCountModel } from './invitation/entity/visits-count.entity';
-import { WidgetConfigModel } from './invitation/entity/widget-config.entity';
-import { WidgetItemModel } from './invitation/entity/widget-item.entity';
 import { InvitationModule } from './invitation/invitation.module';
 import { UsersModel } from './users/entity/users.entity';
 import { UsersModule } from './users/users.module';
+import { WidgetConfigModel } from './widget/entity/widget-config.entity';
+import { WidgetItemModel } from './widget/entity/widget-item.entity';
+import { WidgetModule } from './widget/widget.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { UsersModule } from './users/users.module';
     CommonModule,
     UsersModule,
     InvitationModule,
+    WidgetModule,
   ],
   controllers: [AppController],
   providers: [

@@ -4,6 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CreateWidgetDto } from 'src/widget/dto/create-widget.dto';
+import { WidgetConfigModel } from 'src/widget/entity/widget-config.entity';
+import { WidgetItemModel } from 'src/widget/entity/widget-item.entity';
 import { Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
@@ -17,13 +20,15 @@ import { InvitationOwnerModel } from './entity/invitation-owner.entity';
 import { InvitationModel } from './entity/invitation.entity';
 import { VisitsCountModel } from './entity/visits-count.entity';
 import { transformDateString } from './util/transform-date-string.util';
-const relations = {
-  owners: true,
-  widgets: true,
-  images: true,
-  meta: true,
-  design: true,
-};
+
+const relations = [
+  'owners',
+  'widgets',
+  'widgets.config', // 중첩 관계 추가
+  'images',
+  'meta',
+  'design',
+];
 
 @Injectable()
 export class InvitationService {
@@ -38,6 +43,10 @@ export class InvitationService {
     private readonly invitationDesignRepository: Repository<InvitationDesignModel>,
     @InjectRepository(VisitsCountModel)
     private readonly visitsCountRepository: Repository<VisitsCountModel>,
+    @InjectRepository(WidgetItemModel)
+    private readonly widgetRepository: Repository<WidgetItemModel>,
+    @InjectRepository(WidgetConfigModel)
+    private readonly widgetConfigRepository: Repository<WidgetConfigModel>,
   ) {}
 
   // 청첩장 조회
@@ -274,6 +283,10 @@ export class InvitationService {
     const newInvitation = await this.invitationRepository.create({
       ...invitation,
       user: { id: userId },
+      owners: invitation.owners,
+      widgets: invitation.widgets,
+      meta: invitation.meta,
+      design: invitation.design,
       createdAt: new Date(),
       updatedAt: new Date(),
       id: uuid(),
@@ -281,5 +294,73 @@ export class InvitationService {
 
     await this.invitationRepository.save(newInvitation);
     return newInvitation;
+  }
+
+  // 위젯 생성
+  async createWidget(id: string, body: CreateWidgetDto) {
+    const invitation = await this.invitationRepository.findOneBy({ id });
+    if (!invitation) throw new NotFoundException('청첩장 정보가 없습니다!');
+
+    const existingWidget = await this.widgetRepository.findOne({
+      where: {
+        invitation: { id: invitation.id },
+        type: body.type,
+      },
+      relations: ['config'],
+    });
+
+    const widgetId = uuid();
+
+    if (existingWidget) {
+      if (existingWidget.type === 'INTRO') {
+        throw new BadRequestException(
+          'INTRO 위젯은 하나만 존재할 수 있습니다!',
+        );
+      } else {
+        const existingConfig = await this.widgetConfigRepository.findOneBy({
+          id: existingWidget.config.id,
+        });
+
+        // 기존 엔티티와 새로운 데이터를 병합
+        const updatedConfig = this.widgetConfigRepository.merge(
+          existingConfig,
+          body.config,
+        );
+        await this.widgetConfigRepository.save(updatedConfig);
+
+        // 기존 위젯 엔티티와 새로운 데이터를 병합
+        const updatedWidget = this.widgetRepository.merge(existingWidget, body);
+        updatedWidget.config = updatedConfig;
+        await this.widgetRepository.save(updatedWidget);
+
+        return this.widgetRepository.findOne({
+          where: { id: updatedWidget.id },
+          relations: ['config'],
+        });
+      }
+    } else {
+      const configId = uuid();
+      const config = await this.widgetConfigRepository.create({
+        ...body.config,
+        id: configId,
+      });
+      await this.widgetConfigRepository.save(config);
+
+      const widget = await this.widgetRepository.create({
+        id: widgetId,
+        config: {
+          id: configId,
+        },
+        type: body.type,
+        index: body.index,
+        invitation: { id: invitation.id },
+      });
+      await this.widgetRepository.save(widget);
+    }
+
+    return this.widgetRepository.findOne({
+      where: { id: widgetId },
+      relations: ['config'],
+    });
   }
 }
