@@ -20,6 +20,7 @@ import { InvitationDesignModel } from './invitation/entity/invitation-design.ent
 import { InvitationMetaModel } from './invitation/entity/invitation-meta.entity';
 import { InvitationOwnerModel } from './invitation/entity/invitation-owner.entity';
 import { InvitationModel } from './invitation/entity/invitation.entity';
+import { VisitsCountModel } from './invitation/entity/visits-count.entity';
 import { WidgetConfigModel } from './invitation/entity/widget-config.entity';
 import { WidgetItemModel } from './invitation/entity/widget-item.entity';
 import { InvitationModule } from './invitation/invitation.module';
@@ -49,6 +50,7 @@ import { UsersModule } from './users/users.module';
         WidgetItemModel,
         InvitationMetaModel,
         InvitationDesignModel,
+        VisitsCountModel,
       ],
       synchronize: true,
     }),

@@ -7,6 +7,7 @@ import { InvitationDesignModel } from './entity/invitation-design.entity';
 import { InvitationMetaModel } from './entity/invitation-meta.entity';
 import { InvitationOwnerModel } from './entity/invitation-owner.entity';
 import { InvitationModel } from './entity/invitation.entity';
+import { VisitsCountModel } from './entity/visits-count.entity';
 import { WidgetConfigModel } from './entity/widget-config.entity';
 import { WidgetItemModel } from './entity/widget-item.entity';
 import { InvitationController } from './invitation.controller';
@@ -22,6 +23,7 @@ import { InvitationService } from './invitation.service';
       WidgetItemModel,
       InvitationMetaModel,
       InvitationDesignModel,
+      VisitsCountModel,
     ]),
     UsersModule,
     AuthModule,

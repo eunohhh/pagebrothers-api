@@ -75,4 +75,14 @@ export class InvitationController {
   ) {
     return this.invitationService.updateDesign(id, body.design);
   }
+
+  @Post(':id/visit-logs')
+  async postVisitLog(@Param('id') id: string) {
+    return this.invitationService.updateOrCreateVisitsCount(id);
+  }
+
+  @Get(':id/visit-count-all')
+  async getVisitLogs(@Param('id') id: string) {
+    return this.invitationService.readVisitLogs(id);
+  }
 }

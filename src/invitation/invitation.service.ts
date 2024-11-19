@@ -14,6 +14,7 @@ import { InvitationDesignModel } from './entity/invitation-design.entity';
 import { InvitationMetaModel } from './entity/invitation-meta.entity';
 import { InvitationOwnerModel } from './entity/invitation-owner.entity';
 import { InvitationModel } from './entity/invitation.entity';
+import { VisitsCountModel } from './entity/visits-count.entity';
 
 const relations = {
   owners: true,
@@ -34,6 +35,8 @@ export class InvitationService {
     private readonly invitationMetaRepository: Repository<InvitationMetaModel>,
     @InjectRepository(InvitationDesignModel)
     private readonly invitationDesignRepository: Repository<InvitationDesignModel>,
+    @InjectRepository(VisitsCountModel)
+    private readonly visitsCountRepository: Repository<VisitsCountModel>,
   ) {}
 
   // 초대장 목록 조회
@@ -195,6 +198,30 @@ export class InvitationService {
     return await this.invitationRepository.findOne({
       where: { id },
       relations,
+    });
+  }
+
+  async updateOrCreateVisitsCount(id: string) {
+    const visitsCount = await this.visitsCountRepository.findOneBy({
+      invitation: { id },
+    });
+
+    if (!visitsCount) {
+      await this.visitsCountRepository.save({
+        invitation: { id },
+        count: 1,
+      });
+    } else {
+      await this.visitsCountRepository.update(visitsCount.id, {
+        count: () => 'count + 1',
+      });
+    }
+    return true;
+  }
+
+  async readVisitLogs(id: string) {
+    return await this.visitsCountRepository.find({
+      where: { invitation: { id } },
     });
   }
 }
