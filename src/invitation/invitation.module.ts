@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from 'src/auth/auth.module';
 import { ImageModel } from 'src/common/entity/image.entity';
-import { UsersModule } from 'src/users/users.module';
+import { WidgetModule } from 'src/widget/widget.module';
 import { WidgetConfigModel } from '../widget/entity/widget-config.entity';
 import { WidgetItemModel } from '../widget/entity/widget-item.entity';
 import { InvitationDesignModel } from './entity/invitation-design.entity';
@@ -25,8 +24,7 @@ import { InvitationService } from './invitation.service';
       InvitationDesignModel,
       VisitsCountModel,
     ]),
-    UsersModule,
-    AuthModule,
+    WidgetModule,
   ],
   exports: [InvitationService],
   controllers: [InvitationController],

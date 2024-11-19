@@ -6,11 +6,9 @@ import {
   Param,
   Post,
   Put,
-  UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ReqRes } from 'src/auth/decorator/req-res.decorator';
-import { BearerTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { RequestWithUser } from 'src/common/type/common.type';
 import { CreateWidgetDto } from 'src/widget/dto/create-widget.dto';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
@@ -22,7 +20,7 @@ import { InvitationService } from './invitation.service';
 
 @Controller('invitations')
 @ApiTags('청첩장')
-@UseGuards(BearerTokenGuard)
+@ApiBearerAuth()
 export class InvitationController {
   constructor(private readonly invitationService: InvitationService) {}
 

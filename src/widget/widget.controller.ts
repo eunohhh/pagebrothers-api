@@ -1,11 +1,12 @@
 import { Body, Controller, Delete, Param, Put } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UpdateWidgetConfigDto } from './dto/update-widget-config.dto';
 import { PositiveIntPipe } from './pipe/positive-int.pipe';
 import { WidgetService } from './widget.service';
 
 @Controller('widgets')
 @ApiTags('청첩장/위젯')
+@ApiBearerAuth()
 export class WidgetController {
   constructor(private readonly widgetService: WidgetService) {}
 
