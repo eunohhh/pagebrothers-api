@@ -9,7 +9,10 @@ import { InvitationMetaModel } from './entity/invitation-meta.entity';
 import { InvitationOwnerModel } from './entity/invitation-owner.entity';
 import { InvitationModel } from './entity/invitation.entity';
 import { VisitsCountModel } from './entity/visits-count.entity';
-import { InvitationController } from './invitation.controller';
+import {
+  InvitationController,
+  InvitationShareController,
+} from './invitation.controller';
 import { InvitationService } from './invitation.service';
 
 @Module({
@@ -27,7 +30,7 @@ import { InvitationService } from './invitation.service';
     WidgetModule,
   ],
   exports: [InvitationService],
-  controllers: [InvitationController],
+  controllers: [InvitationController, InvitationShareController],
   providers: [InvitationService],
 })
 export class InvitationModule {}

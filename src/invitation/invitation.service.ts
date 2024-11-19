@@ -363,4 +363,20 @@ export class InvitationService {
       relations: ['config'],
     });
   }
+
+  // 공유키로 청첩장 조회
+  async readInvitationByShareKey(shareKey: string) {
+    const queryResult = await this.invitationRepository
+      .createQueryBuilder('invitation')
+      .where("invitation.share ->> 'shareKey' = :shareKey", { shareKey }) // JSONB 필드 조건
+      .getOne();
+
+    const result = await this.invitationRepository.findOne({
+      where: { id: queryResult.id },
+      relations,
+    });
+
+    if (!result) throw new NotFoundException('청첩장 정보가 없습니다!');
+    return result;
+  }
 }

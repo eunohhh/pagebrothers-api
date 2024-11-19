@@ -124,3 +124,16 @@ export class InvitationController {
     return this.invitationService.createWidget(id, body);
   }
 }
+
+@Controller('share/keys')
+@ApiTags('청첩장/공유')
+@ApiBearerAuth()
+export class InvitationShareController {
+  constructor(private readonly invitationService: InvitationService) {}
+
+  @Get(':shareKey')
+  @ApiOperation({ summary: '공유키로 청첩장 조회' })
+  async getInvitationByShareKey(@Param('shareKey') shareKey: string) {
+    return this.invitationService.readInvitationByShareKey(shareKey);
+  }
+}
