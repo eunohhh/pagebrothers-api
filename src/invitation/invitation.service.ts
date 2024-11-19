@@ -7,9 +7,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
 import { UpdateEventInfoDto } from './dto/update-event-info.dto';
+import { UpdateMetaDto } from './dto/update-meta.dto';
 import { UpdateOwnersDto } from './dto/update-owners.dto';
+import { InvitationMetaModel } from './entity/invitation-meta.entity';
 import { InvitationOwnerModel } from './entity/invitation-owner.entity';
 import { InvitationModel } from './entity/invitation.entity';
+
+const relations = {
+  owners: true,
+  widgets: true,
+  images: true,
+  meta: true,
+};
 
 @Injectable()
 export class InvitationService {
@@ -18,6 +27,8 @@ export class InvitationService {
     private readonly invitationRepository: Repository<InvitationModel>,
     @InjectRepository(InvitationOwnerModel)
     private readonly invitationOwnerRepository: Repository<InvitationOwnerModel>,
+    @InjectRepository(InvitationMetaModel)
+    private readonly invitationMetaRepository: Repository<InvitationMetaModel>,
   ) {}
 
   // 초대장 목록 조회
@@ -26,18 +37,12 @@ export class InvitationService {
 
     const result = await this.invitationRepository.find({
       where: { user: { id } },
-      relations: {
-        owners: true,
-        widgets: true,
-        images: true,
-      },
+      relations,
     });
 
-    const items = {
+    return {
       items: result,
     };
-
-    return items;
   }
 
   // 초대장 생성
@@ -77,11 +82,7 @@ export class InvitationService {
 
     return await this.invitationRepository.findOne({
       where: { id: savedInvitation.id },
-      relations: {
-        owners: true,
-        widgets: true,
-        images: true,
-      },
+      relations,
     });
   }
 
@@ -96,11 +97,7 @@ export class InvitationService {
     await this.invitationRepository.update(id, body);
     return await this.invitationRepository.findOne({
       where: { id },
-      relations: {
-        owners: true,
-        widgets: true,
-        images: true,
-      },
+      relations,
     });
   }
 
@@ -130,11 +127,7 @@ export class InvitationService {
 
     return await this.invitationRepository.findOne({
       where: { id },
-      relations: {
-        owners: true,
-        widgets: true,
-        images: true,
-      },
+      relations,
     });
   }
 
@@ -142,5 +135,34 @@ export class InvitationService {
   async deleteInvitation(id: string) {
     await this.invitationRepository.delete(id);
     return true;
+  }
+
+  // 초대장 메타 정보 수정
+  async updateMeta(id: string, body: UpdateMetaDto) {
+    const invitationMeta = await this.invitationMetaRepository.findOneBy({
+      invitation: { id },
+    });
+
+    if (!invitationMeta) {
+      // 기존 메타 정보가 없으면 새로 생성
+      await this.invitationMetaRepository.save({
+        ...body,
+        invitation: { id },
+      });
+    } else {
+      // 기존 메타 정보가 있으면 업데이트
+      await this.invitationMetaRepository.update(
+        { id: invitationMeta.id },
+        {
+          ...body,
+          invitation: { id },
+        },
+      );
+    }
+
+    return await this.invitationRepository.findOne({
+      where: { id },
+      relations,
+    });
   }
 }

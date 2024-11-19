@@ -13,6 +13,7 @@ import { BearerTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { RequestWithUser } from 'src/common/type/common.type';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
 import { UpdateEventInfoDto } from './dto/update-event-info.dto';
+import { UpdateMetaDto } from './dto/update-meta.dto';
 import { UpdateOwnersDto } from './dto/update-owners.dto';
 import { InvitationService } from './invitation.service';
 
@@ -56,5 +57,13 @@ export class InvitationController {
   @Put(':id/owners')
   async putOwners(@Param('id') id: string, @Body() body: UpdateOwnersDto) {
     return this.invitationService.updateOwners(id, body);
+  }
+
+  @Put(':id/meta')
+  async putMeta(
+    @Param('id') id: string,
+    @Body() body: { meta: UpdateMetaDto },
+  ) {
+    return this.invitationService.updateMeta(id, body.meta);
   }
 }

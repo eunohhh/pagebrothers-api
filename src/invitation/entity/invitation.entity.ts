@@ -6,7 +6,15 @@ import {
   IInvitationShare,
 } from 'src/common/type/common.type';
 import { UsersModel } from 'src/users/entity/users.entity';
-import { Column, Entity, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
+import { InvitationMetaModel } from './invitation-meta.entity';
 import { InvitationOwnerModel } from './invitation-owner.entity';
 import { WidgetItemModel } from './widget-item.entity';
 
@@ -52,4 +60,7 @@ export class InvitationModel extends BaseModel {
 
   @Column({ nullable: true })
   customDomain: string | null;
+
+  @OneToOne(() => InvitationMetaModel, (meta) => meta.invitation)
+  meta: InvitationMetaModel;
 }

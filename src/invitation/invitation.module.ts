@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { ImageModel } from 'src/common/entity/image.entity';
 import { UsersModule } from 'src/users/users.module';
+import { InvitationMetaModel } from './entity/invitation-meta.entity';
 import { InvitationOwnerModel } from './entity/invitation-owner.entity';
 import { InvitationModel } from './entity/invitation.entity';
 import { WidgetConfigModel } from './entity/widget-config.entity';
@@ -18,6 +19,7 @@ import { InvitationService } from './invitation.service';
       ImageModel,
       WidgetConfigModel,
       WidgetItemModel,
+      InvitationMetaModel,
     ]),
     UsersModule,
     AuthModule,

@@ -16,6 +16,7 @@ import {
   ENV_DB_USERNAME_KEY,
 } from './common/const/env-keys.const';
 import { ImageModel } from './common/entity/image.entity';
+import { InvitationMetaModel } from './invitation/entity/invitation-meta.entity';
 import { InvitationOwnerModel } from './invitation/entity/invitation-owner.entity';
 import { InvitationModel } from './invitation/entity/invitation.entity';
 import { WidgetConfigModel } from './invitation/entity/widget-config.entity';
@@ -45,6 +46,7 @@ import { UsersModule } from './users/users.module';
         ImageModel,
         WidgetConfigModel,
         WidgetItemModel,
+        InvitationMetaModel,
       ],
       synchronize: true,
     }),
