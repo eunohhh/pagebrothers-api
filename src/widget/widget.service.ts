@@ -1,6 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { UpdateWidgetConfigDto } from './dto/update-widget-config.dto';
 import { WidgetConfigModel } from './entity/widget-config.entity';
 import { WidgetItemModel } from './entity/widget-item.entity';
@@ -8,6 +12,7 @@ import { WidgetItemModel } from './entity/widget-item.entity';
 @Injectable()
 export class WidgetService {
   constructor(
+    private readonly dataSource: DataSource,
     @InjectRepository(WidgetItemModel)
     private readonly widgetRepository: Repository<WidgetItemModel>,
     @InjectRepository(WidgetConfigModel)
@@ -25,6 +30,47 @@ export class WidgetService {
 
     return this.widgetRepository.findOne({
       where: { config: { id } },
+      relations: ['config'],
+    });
+  }
+
+  // 위젯 인덱스 수정
+  async updateWidgetIndex(id: string, index: number) {
+    if (index < 0) {
+      throw new BadRequestException('인덱스는 음수일 수 없습니다!');
+    }
+
+    await this.dataSource.transaction(async (manager) => {
+      const widgetRepository = manager.getRepository(WidgetItemModel);
+
+      // 1. 대상 위젯 가져오기
+      const targetWidget = await widgetRepository.findOne({ where: { id } });
+      if (!targetWidget) {
+        throw new NotFoundException('위젯을 찾을 수 없습니다!');
+      }
+
+      // 타입이 INTRO 면 바꿀 수 없음
+      if (targetWidget.type === 'INTRO') {
+        throw new BadRequestException(
+          '인트로 위젯은 인덱스를 바꿀 수 없습니다!',
+        );
+      }
+
+      // 2. 충돌하는 위젯의 인덱스를 한 번에 증가
+      await manager
+        .createQueryBuilder()
+        .update(WidgetItemModel)
+        .set({ index: () => `"index" + 1` }) // SQL에서 "index" 값을 +1
+        .where('index >= :newIndex', { newIndex: index })
+        .execute();
+
+      // 3. 대상 위젯의 인덱스를 업데이트
+      targetWidget.index = index;
+      await widgetRepository.save(targetWidget);
+    });
+
+    return this.widgetRepository.findOne({
+      where: { id },
       relations: ['config'],
     });
   }

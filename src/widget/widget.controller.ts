@@ -16,4 +16,10 @@ export class WidgetController {
   ) {
     return this.widgetService.updateWidgetConfig(id, body.config);
   }
+
+  @Put(':id/index/:index')
+  @ApiOperation({ summary: '위젯 위치 수정' })
+  async putWidgetIndex(@Param('id') id: string, @Param('index') index: number) {
+    return this.widgetService.updateWidgetIndex(id, index);
+  }
 }
