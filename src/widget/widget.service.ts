@@ -40,21 +40,22 @@ export class WidgetService {
       throw new BadRequestException('인덱스는 음수일 수 없습니다!');
     }
 
+    // 1. 대상 위젯 가져오기
+    const targetWidget = await this.widgetRepository.findOne({
+      where: { id },
+    });
+    if (!targetWidget) {
+      throw new NotFoundException('위젯을 찾을 수 없습니다!');
+    }
+    // 인트로 위젯은 인덱스를 바꿀 수 없음
+    if (targetWidget.type !== 'INTRO' && index === 0) {
+      throw new BadRequestException(
+        '인트로 위젯을 제외한 위젯의 인덱스는 0일 수 없습니다!',
+      );
+    }
+
     await this.dataSource.transaction(async (manager) => {
       const widgetRepository = manager.getRepository(WidgetItemModel);
-
-      // 1. 대상 위젯 가져오기
-      const targetWidget = await widgetRepository.findOne({ where: { id } });
-      if (!targetWidget) {
-        throw new NotFoundException('위젯을 찾을 수 없습니다!');
-      }
-
-      // 타입이 INTRO 면 바꿀 수 없음
-      if (targetWidget.type === 'INTRO') {
-        throw new BadRequestException(
-          '인트로 위젯은 인덱스를 바꿀 수 없습니다!',
-        );
-      }
 
       // 2. 충돌하는 위젯의 인덱스를 한 번에 증가
       await manager
@@ -73,5 +74,17 @@ export class WidgetService {
       where: { id },
       relations: ['config'],
     });
+  }
+
+  // 위젯 삭제
+  async deleteWidget(id: string) {
+    const targetWidget = await this.widgetRepository.findOneBy({ id });
+    if (!targetWidget) {
+      throw new NotFoundException('위젯을 찾을 수 없습니다!');
+    }
+
+    await this.widgetRepository.delete(id);
+
+    return targetWidget;
   }
 }

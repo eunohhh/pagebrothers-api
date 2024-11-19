@@ -1,6 +1,7 @@
-import { Body, Controller, Param, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Param, Put } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UpdateWidgetConfigDto } from './dto/update-widget-config.dto';
+import { PositiveIntPipe } from './pipe/positive-int.pipe';
 import { WidgetService } from './widget.service';
 
 @Controller('widgets')
@@ -19,7 +20,16 @@ export class WidgetController {
 
   @Put(':id/index/:index')
   @ApiOperation({ summary: '위젯 위치 수정' })
-  async putWidgetIndex(@Param('id') id: string, @Param('index') index: number) {
+  async putWidgetIndex(
+    @Param('id') id: string,
+    @Param('index', PositiveIntPipe) index: number,
+  ) {
     return this.widgetService.updateWidgetIndex(id, index);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: '위젯 삭제' })
+  async deleteWidget(@Param('id') id: string) {
+    return this.widgetService.deleteWidget(id);
   }
 }
