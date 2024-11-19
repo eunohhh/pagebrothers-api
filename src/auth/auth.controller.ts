@@ -1,5 +1,10 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiExcludeController, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExcludeController,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Response } from 'express';
 import { IsPublic } from 'src/common/decorator/is-public.decorator';
 import { RequestWithUser } from 'src/common/type/common.type';
@@ -56,6 +61,7 @@ export class RegisterController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @ApiOperation({ summary: '회원가입' })
   async register(@Body() body: RegisterUserDto) {
     return await this.authService.register(body);
   }
