@@ -22,7 +22,7 @@ export class AuthService {
     };
     return this.jwtService.sign(payload, {
       secret: this.configService.get(ENV_JWT_SECRET_KEY),
-      expiresIn: '1h',
+      expiresIn: '3h',
     });
   }
 

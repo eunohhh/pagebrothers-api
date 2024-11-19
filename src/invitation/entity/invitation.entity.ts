@@ -1,7 +1,6 @@
 import { BaseModel } from 'src/common/entity/base.entity';
 import { ImageModel } from 'src/common/entity/image.entity';
 import {
-  IInvitationDesign,
   IInvitationLocation,
   IInvitationShare,
 } from 'src/common/type/common.type';
@@ -14,6 +13,7 @@ import {
   OneToMany,
   OneToOne,
 } from 'typeorm';
+import { InvitationDesignModel } from './invitation-design.entity';
 import { InvitationMetaModel } from './invitation-meta.entity';
 import { InvitationOwnerModel } from './invitation-owner.entity';
 import { WidgetItemModel } from './widget-item.entity';
@@ -34,9 +34,6 @@ export class InvitationModel extends BaseModel {
 
   @Column({ type: 'jsonb' })
   location: IInvitationLocation;
-
-  @Column({ type: 'jsonb', nullable: true })
-  design: IInvitationDesign;
 
   @OneToMany(() => InvitationOwnerModel, (owner) => owner.invitation)
   owners: InvitationOwnerModel[];
@@ -63,4 +60,7 @@ export class InvitationModel extends BaseModel {
 
   @OneToOne(() => InvitationMetaModel, (meta) => meta.invitation)
   meta: InvitationMetaModel;
+
+  @OneToOne(() => InvitationDesignModel, (design) => design.invitation)
+  design: InvitationDesignModel;
 }

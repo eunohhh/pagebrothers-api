@@ -12,6 +12,7 @@ import { ReqRes } from 'src/auth/decorator/req-res.decorator';
 import { BearerTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { RequestWithUser } from 'src/common/type/common.type';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
+import { UpdateDesignDto } from './dto/update-design.dto';
 import { UpdateEventInfoDto } from './dto/update-event-info.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import { UpdateOwnersDto } from './dto/update-owners.dto';
@@ -65,5 +66,13 @@ export class InvitationController {
     @Body() body: { meta: UpdateMetaDto },
   ) {
     return this.invitationService.updateMeta(id, body.meta);
+  }
+
+  @Put(':id/design')
+  async putDesign(
+    @Param('id') id: string,
+    @Body() body: { design: UpdateDesignDto },
+  ) {
+    return this.invitationService.updateDesign(id, body.design);
   }
 }

@@ -6,9 +6,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
+import { UpdateDesignDto } from './dto/update-design.dto';
 import { UpdateEventInfoDto } from './dto/update-event-info.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import { UpdateOwnersDto } from './dto/update-owners.dto';
+import { InvitationDesignModel } from './entity/invitation-design.entity';
 import { InvitationMetaModel } from './entity/invitation-meta.entity';
 import { InvitationOwnerModel } from './entity/invitation-owner.entity';
 import { InvitationModel } from './entity/invitation.entity';
@@ -18,6 +20,7 @@ const relations = {
   widgets: true,
   images: true,
   meta: true,
+  design: true,
 };
 
 @Injectable()
@@ -29,6 +32,8 @@ export class InvitationService {
     private readonly invitationOwnerRepository: Repository<InvitationOwnerModel>,
     @InjectRepository(InvitationMetaModel)
     private readonly invitationMetaRepository: Repository<InvitationMetaModel>,
+    @InjectRepository(InvitationDesignModel)
+    private readonly invitationDesignRepository: Repository<InvitationDesignModel>,
   ) {}
 
   // 초대장 목록 조회
@@ -153,6 +158,33 @@ export class InvitationService {
       // 기존 메타 정보가 있으면 업데이트
       await this.invitationMetaRepository.update(
         { id: invitationMeta.id },
+        {
+          ...body,
+          invitation: { id },
+        },
+      );
+    }
+
+    return await this.invitationRepository.findOne({
+      where: { id },
+      relations,
+    });
+  }
+
+  // 초대장 디자인 정보 수정
+  async updateDesign(id: string, body: UpdateDesignDto) {
+    const invitationDesign = await this.invitationDesignRepository.findOneBy({
+      invitation: { id },
+    });
+
+    if (!invitationDesign) {
+      await this.invitationDesignRepository.save({
+        ...body,
+        invitation: { id },
+      });
+    } else {
+      await this.invitationDesignRepository.update(
+        { id: invitationDesign.id },
         {
           ...body,
           invitation: { id },
