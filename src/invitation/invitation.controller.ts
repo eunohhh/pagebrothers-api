@@ -147,3 +147,8 @@ export class InvitationShareController {
     return this.invitationService.readInvitationByShareKey(shareKey);
   }
 }
+
+// 더 연구하고 만들어야 할 것
+// /orders/:id/confirm
+// /orders/:id/confirm-free
+// order는 테이블도 만들어야 함

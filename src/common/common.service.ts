@@ -10,7 +10,7 @@ import * as sharp from 'sharp';
 import { InvitationModel } from 'src/invitation/entity/invitation.entity';
 import { QueryRunner, Repository } from 'typeorm';
 import { POST_IMAGE_PATH, TEMP_FOLDER_PATH } from './const/path.const';
-import { CreatePostImageDto } from './dto/create-image.dto';
+import { CreateImageDto } from './dto/create-image.dto';
 import { ImageModel } from './entity/image.entity';
 
 const relations = [
@@ -38,7 +38,7 @@ export class CommonService {
   }
 
   // 청첩장 첨부파일 생성
-  async createPostImage(dto: CreatePostImageDto, qr?: QueryRunner) {
+  async createImage(dto: CreateImageDto, qr?: QueryRunner) {
     const repository = this.getRepositroy(qr);
     const tempFilePath = join(TEMP_FOLDER_PATH, dto.url);
 
@@ -91,7 +91,7 @@ export class CommonService {
       imageObj.dimensions = { width, height };
     }
 
-    await this.createPostImage(imageObj, qr);
+    await this.createImage(imageObj, qr);
 
     const finalInvitation = await this.invitationRepository.findOne({
       where: { id },
