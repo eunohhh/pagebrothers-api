@@ -37,6 +37,7 @@ export class CommonService {
       : this.imageRepository;
   }
 
+  // 청첩장 첨부파일 생성
   async createPostImage(dto: CreatePostImageDto, qr?: QueryRunner) {
     const repository = this.getRepositroy(qr);
     const tempFilePath = join(TEMP_FOLDER_PATH, dto.url);
@@ -97,5 +98,13 @@ export class CommonService {
       relations,
     });
     return finalInvitation;
+  }
+
+  // 이미지 정보조회
+  async readImageInfo(id: string) {
+    const image = await this.imageRepository.findOneBy({ id });
+    if (!image) throw new NotFoundException('이미지가 없습니다!');
+
+    return image;
   }
 }

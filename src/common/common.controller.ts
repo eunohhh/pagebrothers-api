@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Controller,
+  Get,
   Param,
   Post,
   Query,
@@ -38,5 +39,10 @@ export class CommonController {
       query.height,
       qr,
     );
+  }
+
+  @Get('/images/:id')
+  getImageInfo(@Param('id') id: string) {
+    return this.commonService.readImageInfo(id);
   }
 }
