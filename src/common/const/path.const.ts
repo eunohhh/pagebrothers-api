@@ -4,7 +4,7 @@ export const PROJECT_ROOT_PATH = process.cwd();
 // 외부에서 접근 가능한 파일들을 모아둔 폴더 이름
 export const PUBLIC_FOLDER_NAME = 'public';
 // 포스트 이미지들을 저장할 폴더 이름
-export const POSTS_FOLDER_NAME = 'posts';
+export const POSTS_FOLDER_NAME = 'images';
 // 임시폴더 이름
 export const TEMP_FOLDER_NAME = 'temp';
 

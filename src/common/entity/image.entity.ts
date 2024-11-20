@@ -3,7 +3,7 @@ import { IsString } from 'class-validator';
 import { join } from 'path';
 import { InvitationModel } from 'src/invitation/entity/invitation.entity';
 import { WidgetConfigModel } from 'src/widget/entity/widget-config.entity';
-import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
+import { Column, Entity, ManyToMany } from 'typeorm';
 import { POST_PUBLIC_IMAGE_PATH } from '../const/path.const';
 import { BaseModel } from './base.entity';
 
@@ -15,13 +15,7 @@ export enum ImageModelType {
 export class ImageModel extends BaseModel {
   @Column()
   @IsString()
-  @Transform(({ value, obj }) => {
-    if (obj.type === ImageModelType.POST_IMAGE) {
-      return `/${join(POST_PUBLIC_IMAGE_PATH, value)}`;
-    } else {
-      return value;
-    }
-  })
+  @Transform(({ value }) => `/${join(POST_PUBLIC_IMAGE_PATH, value)}`)
   url: string;
 
   @Column({ type: 'jsonb' })
@@ -31,12 +25,11 @@ export class ImageModel extends BaseModel {
   };
 
   @ManyToMany(() => InvitationModel, (invitation) => invitation.images)
-  @JoinTable()
-  invitations: InvitationModel[];
+  invitations?: InvitationModel[];
 
   @ManyToMany(() => WidgetConfigModel, (config) => config.coverImage)
-  coverImage: WidgetConfigModel[];
+  coverImage?: WidgetConfigModel[];
 
   @ManyToMany(() => WidgetConfigModel, (config) => config.singleItem)
-  singleItem: WidgetConfigModel[];
+  singleItem?: WidgetConfigModel[];
 }

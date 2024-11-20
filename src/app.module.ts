@@ -2,6 +2,7 @@ import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { PassportModule } from '@nestjs/passport';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -15,6 +16,7 @@ import {
   ENV_DB_PORT_KEY,
   ENV_DB_USERNAME_KEY,
 } from './common/const/env-keys.const';
+import { PUBLIC_FOLDER_PATH } from './common/const/path.const';
 import { ImageModel } from './common/entity/image.entity';
 import { InvitationDesignModel } from './invitation/entity/invitation-design.entity';
 import { InvitationMetaModel } from './invitation/entity/invitation-meta.entity';
@@ -30,6 +32,13 @@ import { WidgetModule } from './widget/widget.module';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      // 4022.jpg
+      // http://localhost:3000/public/posts/4022.jpg
+      // http://localhost:3000/posts/4022.jpg
+      rootPath: PUBLIC_FOLDER_PATH,
+      serveRoot: '/public',
+    }),
     PassportModule.register({ defaultStrategy: 'kakao' }),
     ConfigModule.forRoot({
       envFilePath: '.env',

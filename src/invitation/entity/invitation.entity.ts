@@ -8,6 +8,7 @@ import { UsersModel } from 'src/users/entity/users.entity';
 import {
   Column,
   Entity,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -45,6 +46,7 @@ export class InvitationModel extends BaseModel {
 
   // images
   @ManyToMany(() => ImageModel, (image) => image.invitations)
+  @JoinTable()
   images: ImageModel[];
 
   @Column({ nullable: true })
