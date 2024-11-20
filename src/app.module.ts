@@ -26,6 +26,7 @@ import { VisitsCountModel } from './invitation/entity/visits-count.entity';
 import { InvitationModule } from './invitation/invitation.module';
 import { UsersModel } from './users/entity/users.entity';
 import { UsersModule } from './users/users.module';
+import { RsvpExtraFieldModel } from './widget/entity/rsvp-extra-fields.entity';
 import { WidgetConfigModel } from './widget/entity/widget-config.entity';
 import { WidgetItemModel } from './widget/entity/widget-item.entity';
 import { WidgetModule } from './widget/widget.module';
@@ -61,6 +62,7 @@ import { WidgetModule } from './widget/widget.module';
         InvitationMetaModel,
         InvitationDesignModel,
         VisitsCountModel,
+        RsvpExtraFieldModel,
       ],
       synchronize: true,
     }),

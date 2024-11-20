@@ -1,7 +1,15 @@
 import { Transform } from 'class-transformer';
 import { BaseModel } from 'src/common/entity/base.entity';
 import { ImageModel } from 'src/common/entity/image.entity';
-import { Column, Entity, JoinTable, ManyToMany, OneToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import {
   Align,
   CongratulationLayoutKey,
@@ -16,9 +24,9 @@ import {
   LocationAddressFormatKey,
   LocationTrafficDescriptionItems,
   OwnerAccountGroup,
-  RsvpExtraField,
   Size,
 } from '../../common/type/common.type';
+import { RsvpExtraFieldModel } from './rsvp-extra-fields.entity';
 import { WidgetItemModel } from './widget-item.entity';
 
 @Entity()
@@ -176,9 +184,13 @@ export class WidgetConfigModel extends BaseModel {
   @Transform(({ value }) => (value === null ? undefined : value))
   isFloating?: boolean;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @OneToMany(() => RsvpExtraFieldModel, (extraField) => extraField.config, {
+    cascade: true,
+    eager: true,
+  })
+  @JoinColumn({ name: 'extraFields' })
   @Transform(({ value }) => (value === null ? undefined : value))
-  extraFields?: RsvpExtraField[];
+  extraFields?: RsvpExtraFieldModel[];
 
   @Column({ nullable: true })
   @Transform(({ value }) => (value === null ? undefined : value))

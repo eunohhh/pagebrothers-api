@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { basicRsvpExtraFields } from 'src/widget/data/basic-rsvp.data';
 import { CreateWidgetDto } from 'src/widget/dto/create-widget.dto';
 import { WidgetConfigModel } from 'src/widget/entity/widget-config.entity';
 import { WidgetItemModel } from 'src/widget/entity/widget-item.entity';
@@ -313,9 +314,13 @@ export class InvitationService {
     const widgetId = uuid();
 
     if (existingWidget) {
-      if (existingWidget.type === 'INTRO') {
+      if (
+        existingWidget.type === 'INTRO' ||
+        existingWidget.type === 'RSVP' ||
+        existingWidget.type === 'CALENDAR'
+      ) {
         throw new BadRequestException(
-          'INTRO 위젯은 하나만 존재할 수 있습니다!',
+          `${existingWidget.type} 위젯은 하나만 존재할 수 있습니다!`,
         );
       } else {
         const existingConfig = await this.widgetConfigRepository.findOneBy({
@@ -341,10 +346,24 @@ export class InvitationService {
       }
     } else {
       const configId = uuid();
-      const config = await this.widgetConfigRepository.create({
-        ...body.config,
-        id: configId,
-      });
+      let config;
+      if (body.type === 'RSVP') {
+        config = await this.widgetConfigRepository.create({
+          ...body.config,
+          id: configId,
+          extraFields:
+            body.config.extraFields.length > 0
+              ? body.config.extraFields
+              : basicRsvpExtraFields.map((field) => ({
+                  ...field,
+                })),
+        });
+      } else {
+        config = await this.widgetConfigRepository.create({
+          ...body.config,
+          id: configId,
+        });
+      }
       await this.widgetConfigRepository.save(config);
 
       const widget = await this.widgetRepository.create({

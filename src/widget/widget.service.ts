@@ -87,4 +87,9 @@ export class WidgetService {
 
     return targetWidget;
   }
+
+  // rsvp 응답 제출
+  // async createRsvpExtraField(id: string, body: CreateRsvpExtraFieldDto) {
+  //   return;
+  // }
 }

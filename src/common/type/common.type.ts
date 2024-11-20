@@ -485,13 +485,19 @@ export interface RsvpWidgetConfig {
 /** INVITATION : RSVP EXTRA CONFIG */
 export interface RsvpExtraField {
   id: string;
-  type: 'InputText' | 'InputNumber' | 'Radio' | 'Select';
+  type: RsvpExtraFieldType;
   label: string;
   needResponseRejected: boolean;
   placeholder: string;
   options: string[];
   optional?: boolean;
 }
+
+export type RsvpExtraFieldType =
+  | 'InputText'
+  | 'InputNumber'
+  | 'Radio'
+  | 'Select';
 
 /** DDay (디데이) */
 export interface DdayWidgetConfig {

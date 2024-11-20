@@ -1,0 +1,55 @@
+import { v4 as uuidv4 } from 'uuid';
+import { RsvpExtraFieldModel } from '../entity/rsvp-extra-fields.entity';
+
+export const basicRsvpExtraFields: Partial<RsvpExtraFieldModel>[] = [
+  {
+    id: uuidv4(),
+    label: '',
+    needResponseRejected: true,
+    options: ['🤵 신랑 손님', '👰 신부 손님'],
+    placeholder: '',
+    type: 'Radio',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: uuidv4(),
+    label: '참석자 이름',
+    needResponseRejected: true,
+    options: ['', ''],
+    placeholder: '참석자 성함을 알려주세요.',
+    type: 'InputText',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: uuidv4(),
+    label: '연락처 뒷자리',
+    needResponseRejected: false,
+    options: ['', ''],
+    placeholder: '동명이인 구분을 위해 수집합니다.',
+    type: 'InputText',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: uuidv4(),
+    label: '참석 인원 (본인 포함)',
+    needResponseRejected: false,
+    options: ['', ''],
+    placeholder: '',
+    type: 'InputNumber',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: uuidv4(),
+    label: '식사 여부',
+    needResponseRejected: false,
+    options: ['🙆 먹어요', '🙅 안먹어요'],
+    placeholder: '',
+    type: 'Radio',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];

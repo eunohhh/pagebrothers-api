@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ImageModel } from 'src/common/entity/image.entity';
+import { RsvpExtraFieldModel } from 'src/widget/entity/rsvp-extra-fields.entity';
 import { WidgetModule } from 'src/widget/widget.module';
 import { WidgetConfigModel } from '../widget/entity/widget-config.entity';
 import { WidgetItemModel } from '../widget/entity/widget-item.entity';
@@ -26,6 +27,7 @@ import { InvitationService } from './invitation.service';
       InvitationMetaModel,
       InvitationDesignModel,
       VisitsCountModel,
+      RsvpExtraFieldModel,
     ]),
     WidgetModule,
   ],
