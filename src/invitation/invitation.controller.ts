@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -6,12 +7,14 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ReqRes } from 'src/auth/decorator/req-res.decorator';
 import { RequestWithUser } from 'src/common/type/common.type';
 import { CreateWidgetDto } from 'src/widget/dto/create-widget.dto';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
+import { ReadOrderDto } from './dto/read-order.dto';
 import { UpdateDesignDto } from './dto/update-design.dto';
 import { UpdateEventInfoDto } from './dto/update-event-info.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
@@ -122,6 +125,13 @@ export class InvitationController {
   @ApiOperation({ summary: '위젯 추가', tags: ['청첩장/위젯'] })
   async postWidget(@Param('id') id: string, @Body() body: CreateWidgetDto) {
     return this.invitationService.createWidget(id, body);
+  }
+
+  @Get(':id/order')
+  @ApiOperation({ summary: '구매정보 불러오기' })
+  async getOrderInfo(@Param('id') id: string, @Query() query: ReadOrderDto) {
+    if (!query.orderType) throw new BadRequestException('orderType 필수');
+    return this.invitationService.readOrder(id, query);
   }
 }
 

@@ -204,6 +204,8 @@ export type Size = 'sm' | 'md' | 'lg';
 
 export type ZoomDisabledKey = 'none' | 'photo' | 'all';
 
+export type OrderType = 'THREE_MONTH_SHARE' | 'FOREVER_SHARE';
+
 // WIDGET
 export type WidgetType =
   | 'CONGRATULATION'

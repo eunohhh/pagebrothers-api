@@ -10,6 +10,7 @@ import { WidgetItemModel } from 'src/widget/entity/widget-item.entity';
 import { Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
+import { ReadOrderDto } from './dto/read-order.dto';
 import { UpdateDesignDto } from './dto/update-design.dto';
 import { UpdateEventInfoDto } from './dto/update-event-info.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
@@ -378,5 +379,26 @@ export class InvitationService {
 
     if (!result) throw new NotFoundException('청첩장 정보가 없습니다!');
     return result;
+  }
+
+  // 구매정보 불러오기
+  async readOrder(id: string, query: ReadOrderDto) {
+    // 일단 임시로 만들어 놓음
+    const order = {
+      orderId: uuid(),
+      plan: query.orderType,
+      orderName:
+        query.orderType === 'THREE_MONTH_SHARE' ? '3개월(90일)' : '평생 소장',
+      amount: 24900,
+      originAmount: 50000,
+      expiredAt:
+        query.orderType === 'THREE_MONTH_SHARE'
+          ? new Date(new Date().setMonth(new Date().getMonth() + 3))
+          : null,
+      couponCode: query.couponCode ?? null,
+      isFreeOrder: false,
+    };
+
+    return order;
   }
 }
