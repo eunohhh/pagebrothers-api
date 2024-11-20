@@ -15,7 +15,10 @@ export enum ImageModelType {
 export class ImageModel extends BaseModel {
   @Column()
   @IsString()
-  @Transform(({ value }) => `/${join(POST_PUBLIC_IMAGE_PATH, value)}`)
+  @Transform(({ value }) => {
+    if (value.includes('s3')) return value;
+    return `/${join(POST_PUBLIC_IMAGE_PATH, value)}`;
+  })
   url: string;
 
   @Column({ type: 'jsonb' })
