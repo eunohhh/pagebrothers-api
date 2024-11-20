@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Providers } from 'src/common/const/provider.const';
 import { BaseModel } from 'src/common/entity/base.entity';
 import { InvitationModel } from 'src/invitation/entity/invitation.entity';
@@ -29,6 +30,14 @@ export class UsersModel extends BaseModel {
 
   @Column()
   acceptMarketing: boolean;
+
+  @Column({
+    default: false,
+  })
+  @Exclude({
+    toPlainOnly: true,
+  })
+  isAdmin: boolean;
 
   @OneToMany(() => InvitationModel, (invitation) => invitation.user)
   invitations: InvitationModel[];

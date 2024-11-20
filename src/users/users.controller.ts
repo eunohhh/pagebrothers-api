@@ -4,7 +4,7 @@ import { ReqRes } from 'src/auth/decorator/req-res.decorator';
 import { RequestWithUser } from 'src/common/type/common.type';
 import { UsersService } from './users.service';
 
-@Controller('users')
+@Controller('user')
 @ApiBearerAuth()
 @ApiTags('유저')
 export class UsersController {
