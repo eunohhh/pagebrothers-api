@@ -6,7 +6,10 @@ import { InvitationMetaModel } from 'src/invitation/entity/invitation-meta.entit
 import { InvitationOwnerModel } from 'src/invitation/entity/invitation-owner.entity';
 import { InvitationModel } from 'src/invitation/entity/invitation.entity';
 import { VisitsCountModel } from 'src/invitation/entity/visits-count.entity';
+import { ColumnModel } from './entity/rsvp-column.entity';
 import { RsvpExtraFieldModel } from './entity/rsvp-extra-fields.entity';
+import { RowValueModel } from './entity/rsvp-row-value.entity';
+import { RowModel } from './entity/rsvp-row.entity';
 import { WidgetConfigModel } from './entity/widget-config.entity';
 import { WidgetItemModel } from './entity/widget-item.entity';
 import { WidgetController } from './widget.controller';
@@ -24,6 +27,9 @@ import { WidgetService } from './widget.service';
       InvitationDesignModel,
       VisitsCountModel,
       RsvpExtraFieldModel,
+      ColumnModel,
+      RowModel,
+      RowValueModel,
     ]),
     // CommonModule,
     // InvitationModule,

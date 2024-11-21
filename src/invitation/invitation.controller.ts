@@ -148,10 +148,6 @@ export class InvitationShareController {
   }
 }
 
-// 더 연구하고 만들어야 할 것
-// /orders/:id/confirm
-// /orders/:id/confirm-free
-// order는 테이블도 만들어야 함
 @Controller('orders')
 @ApiTags('청첩장/구매')
 @ApiBearerAuth()

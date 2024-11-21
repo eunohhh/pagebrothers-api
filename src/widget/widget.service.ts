@@ -6,6 +6,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { UpdateWidgetConfigDto } from './dto/update-widget-config.dto';
+import { ColumnModel } from './entity/rsvp-column.entity';
+import { RowModel } from './entity/rsvp-row.entity';
 import { WidgetConfigModel } from './entity/widget-config.entity';
 import { WidgetItemModel } from './entity/widget-item.entity';
 
@@ -17,6 +19,10 @@ export class WidgetService {
     private readonly widgetRepository: Repository<WidgetItemModel>,
     @InjectRepository(WidgetConfigModel)
     private readonly widgetConfigRepository: Repository<WidgetConfigModel>,
+    @InjectRepository(ColumnModel)
+    private readonly columnRepository: Repository<ColumnModel>,
+    @InjectRepository(RowModel)
+    private readonly rowRepository: Repository<RowModel>,
   ) {}
 
   // 위젯 설정 수정
@@ -88,8 +94,27 @@ export class WidgetService {
     return targetWidget;
   }
 
-  // rsvp 응답 제출
-  // async createRsvpExtraField(id: string, body: CreateRsvpExtraFieldDto) {
-  //   return;
-  // }
+  // rsvp 응답 읽기
+  async readRsvpTableData() {
+    const columns = await this.columnRepository.find();
+    const rows = await this.rowRepository.find({
+      relations: ['rowValues', 'rowValues.column'],
+    });
+
+    return {
+      columns: columns.map((col) => ({ id: col.id, title: col.title })),
+      rows: rows.map((row) => ({
+        id: row.id,
+        no: row.no,
+        accepted: row.accepted,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        updated: row.updated,
+        ...row.rowValues.reduce((acc, value) => {
+          acc[value.column.id] = value.value;
+          return acc;
+        }, {}),
+      })),
+    };
+  }
 }
