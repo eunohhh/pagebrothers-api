@@ -16,6 +16,8 @@ export class WidgetItemModel extends BaseModel {
   @JoinColumn()
   config: WidgetConfigModel;
 
-  @ManyToOne(() => InvitationModel, (invitation) => invitation.widgets)
+  @ManyToOne(() => InvitationModel, (invitation) => invitation.widgets, {
+    onDelete: 'CASCADE',
+  })
   invitation: InvitationModel;
 }

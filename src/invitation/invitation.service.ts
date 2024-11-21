@@ -20,6 +20,7 @@ import { InvitationDesignModel } from './entity/invitation-design.entity';
 import { InvitationMetaModel } from './entity/invitation-meta.entity';
 import { InvitationOwnerModel } from './entity/invitation-owner.entity';
 import { InvitationModel } from './entity/invitation.entity';
+import { OrderModel } from './entity/order.entity';
 import { VisitsCountModel } from './entity/visits-count.entity';
 import { transformDateString } from './util/transform-date-string.util';
 
@@ -27,7 +28,7 @@ const relations = [
   'owners',
   'widgets',
   'widgets.config', // 중첩 관계 추가
-  'widgets.config.extraFields',
+  // 'widgets.config.extraFields',
   'images',
   'meta',
   'design',
@@ -50,6 +51,8 @@ export class InvitationService {
     private readonly widgetRepository: Repository<WidgetItemModel>,
     @InjectRepository(WidgetConfigModel)
     private readonly widgetConfigRepository: Repository<WidgetConfigModel>,
+    @InjectRepository(OrderModel)
+    private readonly orderRepository: Repository<OrderModel>,
   ) {}
 
   // 청첩장 조회
@@ -103,6 +106,9 @@ export class InvitationService {
         mapType: body.location.mapType ?? null,
       },
       templateId: body.templateId ?? '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+      order: {
+        id: uuid(),
+      },
     });
     const savedInvitation = await this.invitationRepository.save(invitation);
 
@@ -173,6 +179,9 @@ export class InvitationService {
 
   // 청첩장 삭제
   async deleteInvitation(id: string) {
+    const invitation = await this.invitationRepository.findOneBy({ id });
+    if (!invitation) throw new NotFoundException('청첩장 정보가 없습니다!');
+
     await this.invitationRepository.delete(id);
     return true;
   }
@@ -407,21 +416,26 @@ export class InvitationService {
 
   // 구매정보 불러오기
   async readOrder(id: string, query: ReadOrderDto) {
-    // 일단 임시로 만들어 놓음
-    const order = {
-      orderId: uuid(),
-      plan: query.orderType,
-      orderName:
-        query.orderType === 'THREE_MONTH_SHARE' ? '3개월(90일)' : '평생 소장',
-      amount: 24900,
-      originAmount: 50000,
-      expiredAt:
+    const invitation = await this.invitationRepository.findOneBy({ id });
+    if (!invitation) throw new NotFoundException('청첩장 정보가 없습니다!');
+
+    const order = await this.orderRepository.findOneBy({
+      invitation: { id: invitation.id },
+    });
+
+    if (!order) throw new NotFoundException('구매정보가 없습니다!');
+    if (query.orderType) {
+      order.plan = query.orderType;
+      order.orderName =
+        query.orderType === 'THREE_MONTH_SHARE' ? '3개월(90일)' : '평생 소장';
+      order.expiredAt =
         query.orderType === 'THREE_MONTH_SHARE'
           ? new Date(new Date().setMonth(new Date().getMonth() + 3))
-          : null,
-      couponCode: query.couponCode ?? null,
-      isFreeOrder: false,
-    };
+          : null;
+    }
+    if (query.couponCode) {
+      order.couponCode = query.couponCode;
+    }
 
     return order;
   }

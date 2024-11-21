@@ -41,14 +41,12 @@ export class InvitationModel extends BaseModel {
 
   @OneToMany(() => InvitationOwnerModel, (owner) => owner.invitation, {
     cascade: true,
-    onDelete: 'CASCADE',
   })
   owners: InvitationOwnerModel[];
 
   // widgets
   @OneToMany(() => WidgetItemModel, (widget) => widget.invitation, {
     cascade: true,
-    onDelete: 'CASCADE',
   })
   widgets: WidgetItemModel[];
 

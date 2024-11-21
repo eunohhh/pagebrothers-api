@@ -189,7 +189,9 @@ export class WidgetConfigModel extends BaseModel {
     eager: true,
   })
   @JoinColumn({ name: 'extraFields' })
-  @Transform(({ value }) => (value === null ? undefined : value))
+  @Transform(({ value }) =>
+    value === null || value.length === 0 ? undefined : value,
+  )
   extraFields?: RsvpExtraFieldModel[];
 
   @Column({ nullable: true })
