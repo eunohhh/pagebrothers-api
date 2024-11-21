@@ -27,6 +27,7 @@ const relations = [
   'owners',
   'widgets',
   'widgets.config', // 중첩 관계 추가
+  'widgets.config.extraFields',
   'images',
   'meta',
   'design',
@@ -53,10 +54,13 @@ export class InvitationService {
 
   // 청첩장 조회
   async readInvitation(id: string) {
-    return await this.invitationRepository.findOne({
+    const result = await this.invitationRepository.findOne({
       where: { id },
       relations,
     });
+
+    if (!result) throw new NotFoundException('청첩장 정보가 없습니다!');
+    return result;
   }
 
   // 청첩장 목록 조회
@@ -71,6 +75,7 @@ export class InvitationService {
       },
     });
 
+    if (!result) throw new NotFoundException('청첩장 정보가 없습니다!');
     return {
       items: result,
     };

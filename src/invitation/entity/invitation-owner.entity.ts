@@ -10,9 +10,6 @@ export class InvitationOwnerModel extends BaseModel {
   @Column()
   name: string; // from owners[].personName
 
-  @ManyToOne(() => InvitationModel, (invitation) => invitation.owners, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => InvitationModel, (invitation) => invitation.owners)
   invitation: InvitationModel;
 }

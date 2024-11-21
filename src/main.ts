@@ -13,7 +13,7 @@ async function bootstrap() {
     .setTitle('pagebrothers-api')
     .setDescription('pagebrothers api 문서입니다.')
     .setVersion('1.0')
-    .addBasicAuth()
+    // .addBasicAuth()
     .addBearerAuth()
     .build();
 

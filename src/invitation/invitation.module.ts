@@ -9,6 +9,7 @@ import { InvitationDesignModel } from './entity/invitation-design.entity';
 import { InvitationMetaModel } from './entity/invitation-meta.entity';
 import { InvitationOwnerModel } from './entity/invitation-owner.entity';
 import { InvitationModel } from './entity/invitation.entity';
+import { OrderModel } from './entity/order.entity';
 import { VisitsCountModel } from './entity/visits-count.entity';
 import {
   InvitationController,
@@ -28,6 +29,7 @@ import { InvitationService } from './invitation.service';
       InvitationDesignModel,
       VisitsCountModel,
       RsvpExtraFieldModel,
+      OrderModel,
     ]),
     WidgetModule,
   ],
