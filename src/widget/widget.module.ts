@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from 'src/auth/auth.module';
 import { ImageModel } from 'src/common/entity/image.entity';
 import { InvitationDesignModel } from 'src/invitation/entity/invitation-design.entity';
 import { InvitationMetaModel } from 'src/invitation/entity/invitation-meta.entity';
@@ -12,7 +13,7 @@ import { RowValueModel } from './entity/rsvp-row-value.entity';
 import { RowModel } from './entity/rsvp-row.entity';
 import { WidgetConfigModel } from './entity/widget-config.entity';
 import { WidgetItemModel } from './entity/widget-item.entity';
-import { WidgetController } from './widget.controller';
+import { WidgetController, WidgetRsvpController } from './widget.controller';
 import { WidgetService } from './widget.service';
 
 @Module({
@@ -31,11 +32,12 @@ import { WidgetService } from './widget.service';
       RowModel,
       RowValueModel,
     ]),
+    AuthModule,
     // CommonModule,
     // InvitationModule,
   ],
   exports: [WidgetService],
-  controllers: [WidgetController],
+  controllers: [WidgetController, WidgetRsvpController],
   providers: [WidgetService],
 })
 export class WidgetModule {}

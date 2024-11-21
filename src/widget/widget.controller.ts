@@ -1,5 +1,8 @@
-import { Body, Controller, Delete, Param, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Put } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
+import { AuthService } from 'src/auth/auth.service';
+import { ReqRes } from 'src/auth/decorator/req-res.decorator';
 import { UpdateWidgetConfigDto } from './dto/update-widget-config.dto';
 import { PositiveIntPipe } from './pipe/positive-int.pipe';
 import { WidgetService } from './widget.service';
@@ -32,5 +35,51 @@ export class WidgetController {
   @ApiOperation({ summary: '위젯 삭제' })
   async deleteWidget(@Param('id') id: string) {
     return this.widgetService.deleteWidget(id);
+  }
+}
+
+@Controller('invitations/:invitationId/rsvp')
+@ApiTags('청첩장/RSVP')
+@ApiBearerAuth()
+export class WidgetRsvpController {
+  constructor(
+    private readonly widgetService: WidgetService,
+    private readonly authService: AuthService,
+  ) {}
+
+  @Get('answers')
+  @ApiOperation({
+    summary: 'rsvp 응답 결과들 조회',
+  })
+  async getRsvpTableDataAnswers(@Param('invitationId') invitationId: string) {
+    return this.widgetService.readRsvpTableDataAnswers(invitationId);
+  }
+
+  @Get('answer')
+  @ApiOperation({ summary: '나의 RSVP 응답 조회' })
+  async getMyRsvpAnswer(
+    @ReqRes() { res, req }: { res: Response; req: Request },
+    @Param('invitationId') invitationId: string,
+  ) {
+    const { _ps_ut: sessionId } = req.cookies;
+
+    if (!sessionId) {
+      const token = this.authService.createHash(invitationId);
+      res.cookie('_ps_ut', token, {
+        httpOnly: true,
+        secure: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 1주일
+        sameSite: 'strict',
+      });
+    }
+
+    if (this.authService.validateCookie(invitationId, sessionId)) {
+      return this.widgetService.readMyRsvpAnswer(invitationId);
+    }
+
+    return res.status(200).json({
+      answered: false,
+      data: null,
+    });
   }
 }

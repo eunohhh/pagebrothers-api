@@ -94,8 +94,28 @@ export class WidgetService {
     return targetWidget;
   }
 
-  // rsvp 응답 읽기
-  async readRsvpTableData() {
+  // 나의 RSVP 응답 조희
+  async readMyRsvpAnswer(invitationId: string) {
+    const existingRows = await this.rowRepository.find({
+      where: { invitation: { id: invitationId } },
+      relations: ['rowValues', 'rowValues.column'],
+    });
+
+    if (!existingRows.length) {
+      return {
+        answered: false,
+        data: null,
+      };
+    }
+
+    return {
+      answered: true,
+      data: existingRows,
+    };
+  }
+
+  // rsvp 응답 읽기(answers)
+  async readRsvpTableDataAnswers(invitationId: string) {
     const columns = await this.columnRepository.find();
     const rows = await this.rowRepository.find({
       relations: ['rowValues', 'rowValues.column'],

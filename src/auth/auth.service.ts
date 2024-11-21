@@ -1,9 +1,14 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { createHash } from 'crypto';
 import { ENV_JWT_SECRET_KEY } from 'src/common/const/env-keys.const';
 import { RequestWithUser } from 'src/common/type/common.type';
 import { UsersService } from 'src/users/users.service';
+import { RowModel } from 'src/widget/entity/rsvp-row.entity';
+import { Repository } from 'typeorm';
+import { v4 as uuid } from 'uuid';
 import { RegisterUserDto } from './dto/register-user.dto';
 
 @Injectable()
@@ -12,6 +17,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly usersService: UsersService,
+    @InjectRepository(RowModel)
+    private readonly rowRepository: Repository<RowModel>,
   ) {}
 
   generateJwt(user: any): string {
@@ -64,5 +71,54 @@ export class AuthService {
 
   async register(body: RegisterUserDto) {
     return await this.usersService.createUser(body);
+  }
+
+  async createHash(invitationId: string) {
+    const generatedUuid = uuid();
+
+    const row = await this.rowRepository.create({
+      invitation: {
+        id: invitationId,
+      },
+      id: generatedUuid,
+    });
+
+    await this.rowRepository.save(row);
+
+    const hash = createHash('sha256')
+      .update(generatedUuid + invitationId)
+      .digest('hex');
+    return hash;
+  }
+
+  async validateCookie(
+    invitationId: string,
+    sessionId: string,
+  ): Promise<boolean> {
+    if (!sessionId) {
+      throw new UnauthorizedException('Session cookie is missing');
+    }
+    const row = await this.rowRepository.findOne({
+      where: {
+        invitation: {
+          id: invitationId,
+        },
+      },
+    });
+
+    if (!row) {
+      throw new UnauthorizedException('Invalid session cookie');
+    }
+
+    // 해싱 값과 비교
+    const expectedHash = createHash('sha256')
+      .update(row.id + invitationId)
+      .digest('hex');
+
+    if (sessionId !== expectedHash) {
+      throw new UnauthorizedException('Invalid session cookie');
+    }
+
+    return true; // 검증 성공
   }
 }

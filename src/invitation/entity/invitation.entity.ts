@@ -5,6 +5,7 @@ import {
   IInvitationShare,
 } from 'src/common/type/common.type';
 import { UsersModel } from 'src/users/entity/users.entity';
+import { RowModel } from 'src/widget/entity/rsvp-row.entity';
 import {
   Column,
   Entity,
@@ -94,4 +95,10 @@ export class InvitationModel extends BaseModel {
     // eager: true,
   })
   order: OrderModel;
+
+  @OneToMany(() => RowModel, (row) => row.invitation, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  rows: RowModel[];
 }

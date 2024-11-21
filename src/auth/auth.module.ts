@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from 'src/users/users.module';
+import { RowModel } from 'src/widget/entity/rsvp-row.entity';
 import {
   AuthController,
   LoginController,
@@ -16,6 +18,7 @@ import { KakaoStrategy } from './strategy/kakao.strategy';
     PassportModule.register({ defaultStrategy: 'kakao' }),
     JwtModule.register({}),
     UsersModule,
+    TypeOrmModule.forFeature([RowModel]),
   ],
   controllers: [AuthController, LoginController, RegisterController],
   providers: [AuthService, KakaoStrategy, GoogleStrategy],
