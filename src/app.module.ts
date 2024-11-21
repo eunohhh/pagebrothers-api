@@ -66,6 +66,7 @@ import { WidgetModule } from './widget/widget.module';
         RsvpExtraFieldModel,
         OrderModel,
       ],
+      // migrations: ['src/migrations/*.ts'],
       synchronize: true,
     }),
     AuthModule,

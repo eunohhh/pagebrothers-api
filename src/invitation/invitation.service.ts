@@ -8,9 +8,10 @@ import { basicRsvpExtraFields } from 'src/widget/data/basic-rsvp.data';
 import { CreateWidgetDto } from 'src/widget/dto/create-widget.dto';
 import { WidgetConfigModel } from 'src/widget/entity/widget-config.entity';
 import { WidgetItemModel } from 'src/widget/entity/widget-item.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
+import { CreateOrderConfirmDto } from './dto/create-order-confirm.dto';
 import { ReadOrderDto } from './dto/read-order.dto';
 import { UpdateDesignDto } from './dto/update-design.dto';
 import { UpdateEventInfoDto } from './dto/update-event-info.dto';
@@ -32,6 +33,7 @@ const relations = [
   'images',
   'meta',
   'design',
+  // 'order',
 ];
 
 @Injectable()
@@ -53,6 +55,7 @@ export class InvitationService {
     private readonly widgetConfigRepository: Repository<WidgetConfigModel>,
     @InjectRepository(OrderModel)
     private readonly orderRepository: Repository<OrderModel>,
+    private readonly dataSource: DataSource,
   ) {}
 
   // 청첩장 조회
@@ -90,8 +93,11 @@ export class InvitationService {
 
     if (!body.owners) throw new BadRequestException('주인 정보가 없습니다!');
 
+    const invitationId = uuid();
+
     const invitation = await this.invitationRepository.create({
       user: { id },
+      id: invitationId,
       eventAt: body.eventAt
         ? body.eventAt
         : new Date(new Date().setMonth(new Date().getMonth() + 1)),
@@ -108,6 +114,9 @@ export class InvitationService {
       templateId: body.templateId ?? '3fa85f64-5717-4562-b3fc-2c963f66afa6',
       order: {
         id: uuid(),
+        invitation: {
+          id: invitationId,
+        },
       },
     });
     const savedInvitation = await this.invitationRepository.save(invitation);
@@ -269,26 +278,71 @@ export class InvitationService {
   }
 
   // 청첩장 공유 가시성 생성
-  async createShareVisibilty(id: string) {
-    const invitation = await this.invitationRepository.findOneBy({ id });
+  async createShareVisibility(id: string) {
+    const invitation = await this.invitationRepository.findOne({
+      where: { id },
+      relations: ['order'],
+    });
+    let share;
+    const shareKey = transformDateString(invitation.eventAt.toISOString());
     if (!invitation) throw new NotFoundException('청첩장 정보가 없습니다!');
+    if (!invitation.order) {
+      share = {
+        shareKey,
+        visible: false,
+        expiredAt: null,
+      };
+    } else {
+      const expiredAt =
+        invitation.order.plan === 'THREE_MONTH_SHARE'
+          ? new Date(new Date().setMonth(new Date().getMonth() + 3))
+          : null;
 
-    const share = {
-      shareKey: transformDateString(invitation.eventAt.toISOString()),
-      visible: true,
+      share = {
+        shareKey,
+        visible: true,
+        expiredAt,
+      };
+    }
+
+    await this.invitationRepository.save({ ...invitation, share });
+
+    const result = await this.invitationRepository.findOne({
+      where: { id },
+      relations: ['order'],
+    });
+    return {
+      orderId: result.order.id,
     };
-
-    await this.invitationRepository.update(id, { ...invitation, share });
-    return true;
   }
 
   // 청첩장 공유 가시성 끄기
   async offShareVisibilty(id: string) {
-    const invitation = await this.invitationRepository.findOneBy({ id });
+    const invitation = await this.invitationRepository.findOne({
+      where: { id },
+      relations: ['order'],
+    });
     if (!invitation) throw new NotFoundException('청첩장 정보가 없습니다!');
+    if (!invitation.order) throw new NotFoundException('구매정보가 없습니다!');
+    const expiredAt =
+      invitation.order.plan === 'THREE_MONTH_SHARE'
+        ? new Date(new Date().setMonth(new Date().getMonth() + 3))
+        : null;
 
-    await this.invitationRepository.update(id, { ...invitation, share: null });
-    return true;
+    const share = {
+      shareKey: transformDateString(invitation.eventAt.toISOString()),
+      visible: false,
+      expiredAt,
+    };
+
+    await this.invitationRepository.save({ ...invitation, share });
+    const result = await this.invitationRepository.findOne({
+      where: { id },
+      relations: ['order'],
+    });
+    return {
+      orderId: result.order.id,
+    };
   }
 
   // 청첩장 복제하기
@@ -331,7 +385,13 @@ export class InvitationService {
       if (
         existingWidget.type === 'INTRO' ||
         existingWidget.type === 'RSVP' ||
-        existingWidget.type === 'CALENDAR'
+        existingWidget.type === 'CALENDAR' ||
+        existingWidget.type === 'LOCATION' ||
+        existingWidget.type === 'GUESTBOOK' ||
+        existingWidget.type === 'SHARE' ||
+        existingWidget.type === 'EVENT_SEQUENCE' ||
+        existingWidget.type === 'GREETING' ||
+        existingWidget.type === 'CONGRATULATION'
       ) {
         throw new BadRequestException(
           `${existingWidget.type} 위젯은 하나만 존재할 수 있습니다!`,
@@ -438,5 +498,44 @@ export class InvitationService {
     }
 
     return order;
+  }
+
+  // 구매완료
+  // orderId 는 토스페이먼트 구매가 완료되었을때 받아오는 값 그때에만 알 수 있음
+  async createOrderConfirm(orderId: string, body: CreateOrderConfirmDto) {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['invitation'],
+    });
+    if (!order) throw new NotFoundException('구매정보가 없습니다!');
+    if (!order.invitation) throw new NotFoundException('초대 정보가 없습니다!');
+
+    if (order.paymentKey)
+      throw new BadRequestException('이미 결제된 청첩장입니다!');
+
+    if (order.plan === 'THREE_MONTH_SHARE') {
+      order.expiredAt = new Date(
+        new Date().setMonth(new Date().getMonth() + 3),
+      );
+    }
+
+    order.paymentKey = body.paymentKey;
+    order.amount = body.amount;
+
+    await this.orderRepository.save(order);
+
+    // Invitation의 order 속성을 설정합니다.
+    const invitation = order.invitation;
+    invitation.order = order;
+
+    // Invitation을 저장하여 관계를 동기화합니다.
+    await this.invitationRepository.save(invitation);
+    await this.createShareVisibility(invitation.id);
+
+    const newInvitation = await this.invitationRepository.findOne({
+      where: { id: order.invitation.id },
+      relations: [...relations, 'order'],
+    });
+    return newInvitation;
   }
 }

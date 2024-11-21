@@ -13,6 +13,7 @@ import { OrderModel } from './entity/order.entity';
 import { VisitsCountModel } from './entity/visits-count.entity';
 import {
   InvitationController,
+  InvitationOrderController,
   InvitationShareController,
 } from './invitation.controller';
 import { InvitationService } from './invitation.service';
@@ -34,7 +35,11 @@ import { InvitationService } from './invitation.service';
     WidgetModule,
   ],
   exports: [InvitationService],
-  controllers: [InvitationController, InvitationShareController],
+  controllers: [
+    InvitationController,
+    InvitationShareController,
+    InvitationOrderController,
+  ],
   providers: [InvitationService],
 })
 export class InvitationModule {}

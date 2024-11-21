@@ -47,6 +47,7 @@ export class InvitationModel extends BaseModel {
   // widgets
   @OneToMany(() => WidgetItemModel, (widget) => widget.invitation, {
     cascade: true,
+    // eager: true,
   })
   widgets: WidgetItemModel[];
 
@@ -90,7 +91,7 @@ export class InvitationModel extends BaseModel {
   @OneToOne(() => OrderModel, (order) => order.invitation, {
     cascade: true,
     onDelete: 'CASCADE',
+    // eager: true,
   })
-  @JoinColumn()
   order: OrderModel;
 }

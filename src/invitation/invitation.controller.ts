@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -14,6 +13,7 @@ import { ReqRes } from 'src/auth/decorator/req-res.decorator';
 import { RequestWithUser } from 'src/common/type/common.type';
 import { CreateWidgetDto } from 'src/widget/dto/create-widget.dto';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
+import { CreateOrderConfirmDto } from './dto/create-order-confirm.dto';
 import { ReadOrderDto } from './dto/read-order.dto';
 import { UpdateDesignDto } from './dto/update-design.dto';
 import { UpdateEventInfoDto } from './dto/update-event-info.dto';
@@ -90,7 +90,7 @@ export class InvitationController {
   @Put(':id/shares/visibility/on')
   @ApiOperation({ summary: '청첩장 공개하기' })
   async putShareOn(@Param('id') id: string) {
-    return this.invitationService.createShareVisibilty(id);
+    return this.invitationService.createShareVisibility(id);
   }
 
   @Put(':id/shares/visibility/off')
@@ -128,9 +128,9 @@ export class InvitationController {
   }
 
   @Get(':id/order')
+  @ApiTags('청첩장/구매')
   @ApiOperation({ summary: '구매정보 불러오기' })
   async getOrderInfo(@Param('id') id: string, @Query() query: ReadOrderDto) {
-    if (!query.orderType) throw new BadRequestException('orderType 필수');
     return this.invitationService.readOrder(id, query);
   }
 }
@@ -152,3 +152,18 @@ export class InvitationShareController {
 // /orders/:id/confirm
 // /orders/:id/confirm-free
 // order는 테이블도 만들어야 함
+@Controller('orders')
+@ApiTags('청첩장/구매')
+@ApiBearerAuth()
+export class InvitationOrderController {
+  constructor(private readonly invitationService: InvitationService) {}
+
+  @Post(':orderId/confirm')
+  @ApiOperation({ summary: '구매완료', tags: ['청첩장/구매'] })
+  async postOrderConfirm(
+    @Param('orderId') orderId: string,
+    @Body() body: CreateOrderConfirmDto,
+  ) {
+    return this.invitationService.createOrderConfirm(orderId, body);
+  }
+}

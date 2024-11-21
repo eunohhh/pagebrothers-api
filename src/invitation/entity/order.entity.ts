@@ -1,5 +1,6 @@
+import { Exclude } from 'class-transformer';
 import { BaseModel } from 'src/common/entity/base.entity';
-import { Column, Entity, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { InvitationModel } from './invitation.entity';
 
 // 이 엔티티는 있을 수도 있고 없을 수도 있고
@@ -15,6 +16,10 @@ export class OrderModel extends BaseModel {
   @Column()
   amount: number = 24000;
 
+  @Column({ nullable: true })
+  @Exclude({ toPlainOnly: true })
+  paymentKey: string;
+
   @Column()
   originAmount: number = 50000;
 
@@ -28,5 +33,6 @@ export class OrderModel extends BaseModel {
   isFreeOrder: boolean = false;
 
   @OneToOne(() => InvitationModel, (invitation) => invitation.order)
+  @JoinColumn()
   invitation: InvitationModel;
 }
