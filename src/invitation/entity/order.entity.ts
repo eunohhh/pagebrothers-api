@@ -35,4 +35,8 @@ export class OrderModel extends BaseModel {
   @OneToOne(() => InvitationModel, (invitation) => invitation.order)
   @JoinColumn()
   invitation: InvitationModel;
+
+  @Column({ nullable: true })
+  @Exclude({ toPlainOnly: true })
+  isPaymentCompleted: boolean;
 }

@@ -166,4 +166,10 @@ export class InvitationOrderController {
   ) {
     return this.invitationService.createOrderConfirm(orderId, body);
   }
+
+  @Post(':orderId/confirm-free')
+  @ApiOperation({ summary: '(무료)구매완료', tags: ['청첩장/구매'] })
+  async postFreeOrderConfirm(@Param('orderId') orderId: string) {
+    return this.invitationService.createFreeOrderConfirm(orderId);
+  }
 }

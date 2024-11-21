@@ -283,27 +283,23 @@ export class InvitationService {
       where: { id },
       relations: ['order'],
     });
-    let share;
     const shareKey = transformDateString(invitation.eventAt.toISOString());
     if (!invitation) throw new NotFoundException('청첩장 정보가 없습니다!');
-    if (!invitation.order) {
-      share = {
-        shareKey,
-        visible: false,
-        expiredAt: null,
-      };
-    } else {
-      const expiredAt =
-        invitation.order.plan === 'THREE_MONTH_SHARE'
-          ? new Date(new Date().setMonth(new Date().getMonth() + 3))
-          : null;
+    if (!invitation.order)
+      throw new NotFoundException('청첩장과 관계된 주문 정보가 없습니다!');
+    if (!invitation.order.isPaymentCompleted)
+      throw new BadRequestException('결제가 완료되지 않은 청첩장입니다!');
 
-      share = {
-        shareKey,
-        visible: true,
-        expiredAt,
-      };
-    }
+    const expiredAt =
+      invitation.order.plan === 'THREE_MONTH_SHARE'
+        ? new Date(new Date().setMonth(new Date().getMonth() + 3))
+        : null;
+
+    const share = {
+      shareKey,
+      visible: true,
+      expiredAt,
+    };
 
     await this.invitationRepository.save({ ...invitation, share });
 
@@ -521,7 +517,7 @@ export class InvitationService {
 
     order.paymentKey = body.paymentKey;
     order.amount = body.amount;
-
+    order.isPaymentCompleted = true;
     await this.orderRepository.save(order);
 
     // Invitation의 order 속성을 설정합니다.
@@ -529,6 +525,37 @@ export class InvitationService {
     invitation.order = order;
 
     // Invitation을 저장하여 관계를 동기화합니다.
+    await this.invitationRepository.save(invitation);
+    await this.createShareVisibility(invitation.id);
+
+    const newInvitation = await this.invitationRepository.findOne({
+      where: { id: order.invitation.id },
+      relations: [...relations, 'order'],
+    });
+    return newInvitation;
+  }
+
+  // 무료 구매 완료
+  async createFreeOrderConfirm(orderId: string) {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['invitation'],
+    });
+    if (!order) throw new NotFoundException('구매정보가 없습니다!');
+    if (!order.invitation) throw new NotFoundException('초대 정보가 없습니다!');
+    if (order.paymentKey)
+      throw new BadRequestException('이미 결제된 청첩장입니다!');
+
+    order.plan = 'FOREVER_SHARE';
+    order.orderName = '평생 소장';
+    order.amount = 50000;
+    order.isPaymentCompleted = true;
+
+    await this.orderRepository.save(order);
+
+    const invitation = order.invitation;
+    invitation.order = order;
+
     await this.invitationRepository.save(invitation);
     await this.createShareVisibility(invitation.id);
 
