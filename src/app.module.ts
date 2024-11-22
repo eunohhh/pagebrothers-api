@@ -27,6 +27,7 @@ import { VisitsCountModel } from './invitation/entity/visits-count.entity';
 import { InvitationModule } from './invitation/invitation.module';
 import { UsersModel } from './users/entity/users.entity';
 import { UsersModule } from './users/users.module';
+import { CommentModel } from './widget/entity/comment.entity';
 import { ColumnModel } from './widget/entity/rsvp-column.entity';
 import { RsvpExtraFieldModel } from './widget/entity/rsvp-extra-fields.entity';
 import { RowValueModel } from './widget/entity/rsvp-row-value.entity';
@@ -71,6 +72,7 @@ import { WidgetModule } from './widget/widget.module';
         ColumnModel,
         RowModel,
         RowValueModel,
+        CommentModel,
       ],
       // migrations: ['src/migrations/*.ts'],
       synchronize: true,

@@ -5,6 +5,7 @@ import {
   IInvitationShare,
 } from 'src/common/type/common.type';
 import { UsersModel } from 'src/users/entity/users.entity';
+import { CommentModel } from 'src/widget/entity/comment.entity';
 import { RowModel } from 'src/widget/entity/rsvp-row.entity';
 import {
   Column,
@@ -101,4 +102,10 @@ export class InvitationModel extends BaseModel {
     onDelete: 'CASCADE',
   })
   rows: RowModel[];
+
+  @OneToMany(() => CommentModel, (comment) => comment.invitation, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  comments: CommentModel[];
 }

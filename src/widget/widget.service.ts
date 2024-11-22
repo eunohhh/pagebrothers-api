@@ -5,10 +5,13 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { InvitationModel } from 'src/invitation/entity/invitation.entity';
 import { DataSource, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
+import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateRsvpAnswerDto } from './dto/create-rsvp-answer.dto';
 import { UpdateWidgetConfigDto } from './dto/update-widget-config.dto';
+import { CommentModel } from './entity/comment.entity';
 import { ColumnModel } from './entity/rsvp-column.entity';
 import { RowValueModel } from './entity/rsvp-row-value.entity';
 import { RowModel } from './entity/rsvp-row.entity';
@@ -29,6 +32,10 @@ export class WidgetService {
     private readonly rowRepository: Repository<RowModel>,
     @InjectRepository(RowValueModel)
     private readonly rowValueRepository: Repository<RowValueModel>,
+    @InjectRepository(CommentModel)
+    private readonly commentRepository: Repository<CommentModel>,
+    @InjectRepository(InvitationModel)
+    private readonly invitationRepository: Repository<InvitationModel>,
   ) {}
 
   // 위젯 설정 수정
@@ -249,6 +256,100 @@ export class WidgetService {
       where: { invitation: { id: invitationId } },
     });
     return count;
+  }
+
+  // 방명록 게시글 조회
+  async readCommentList(invitationId: string, page: number, size: number) {
+    const [content, totalElements] = await this.commentRepository.findAndCount({
+      where: { invitation: { id: invitationId } },
+      take: size,
+      skip: page * size,
+      order: { createdAt: 'DESC' },
+    });
+
+    return {
+      content,
+      pageable: {
+        sort: {
+          empty: false,
+          sorted: true,
+          unsorted: false,
+        },
+        offset: page * size,
+        pageNumber: page,
+        pageSize: size,
+        paged: true,
+        unpaged: false,
+      },
+      totalPages: Math.ceil(totalElements / size),
+      totalElements,
+      last: page >= Math.ceil(totalElements / size) - 1,
+      size,
+      number: page,
+      sort: {
+        empty: false,
+        sorted: true,
+        unsorted: false,
+      },
+      numberOfElements: content.length,
+      first: page === 0,
+      empty: content.length === 0,
+    };
+  }
+
+  // 방명록 게시글 작성
+  async createComment(invitationId: string, body: CreateCommentDto) {
+    const invitation = await this.invitationRepository.findOneBy({
+      id: invitationId,
+    });
+    if (!invitation) {
+      throw new NotFoundException('초대장을 찾을 수 없습니다!');
+    }
+
+    const comment = this.commentRepository.create({
+      invitation: { id: invitationId },
+      ...body,
+    });
+    await this.commentRepository.save(comment);
+
+    return {
+      id: comment.id,
+    };
+  }
+
+  // 방명록 게시글 삭제
+  async deleteComment(commentId: string, password: string) {
+    const comment = await this.commentRepository.findOneBy({ id: commentId });
+    if (!comment) {
+      throw new NotFoundException('방명록 게시글을 찾을 수 없습니다!');
+    }
+    if (comment.password !== password) {
+      throw new BadRequestException('비밀번호가 일치하지 않습니다!');
+    }
+
+    await this.commentRepository.delete(comment.id);
+
+    return true;
+  }
+
+  // 방명록 게시글 수정
+  async updateComment(
+    commentId: string,
+    body: Pick<CreateCommentDto, 'body' | 'password'>,
+  ) {
+    const comment = await this.commentRepository.findOneBy({ id: commentId });
+    if (!comment) {
+      throw new NotFoundException('방명록 게시글을 찾을 수 없습니다!');
+    }
+    if (comment.password !== body.password) {
+      throw new BadRequestException('비밀번호가 일치하지 않습니다!');
+    }
+
+    await this.commentRepository.update(comment.id, {
+      body: body.body,
+    });
+
+    return true;
   }
 }
 

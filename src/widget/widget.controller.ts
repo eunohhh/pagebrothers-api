@@ -7,11 +7,13 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthService } from 'src/auth/auth.service';
+import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateRsvpAnswerDto } from './dto/create-rsvp-answer.dto';
 import { UpdateWidgetConfigDto } from './dto/update-widget-config.dto';
 import { PositiveIntPipe } from './pipe/positive-int.pipe';
@@ -125,5 +127,52 @@ export class WidgetRsvpController {
   @ApiOperation({ summary: 'rsvp 응답 결과 전체 조회' })
   async getRsvpAnswers(@Param('invitationId') invitationId: string) {
     return this.widgetService.readRsvpTableDataAnswers(invitationId);
+  }
+}
+
+@Controller()
+@ApiTags('청첩장/방명록')
+@ApiBearerAuth()
+export class WidgetCommentController {
+  constructor(private readonly widgetService: WidgetService) {}
+
+  @Get('invitations/:invitationId/comments')
+  @ApiOperation({ summary: '방명록 게시글 조회', tags: ['청첩장/방명록'] })
+  async getCommentList(
+    @Param('invitationId') invitationId: string,
+    @Query('page', PositiveIntPipe) page: number,
+    @Query('size', PositiveIntPipe) size: number,
+    // @Query('sort') sort: string[],
+  ) {
+    if (page < 0 || size < 1)
+      throw new BadRequestException('잘못된 페이지 번호입니다.');
+    return this.widgetService.readCommentList(invitationId, page, size);
+  }
+
+  @Post('invitations/:invitationId/comments')
+  @ApiOperation({ summary: '방명록 게시글 작성', tags: ['청첩장/방명록'] })
+  async createComment(
+    @Param('invitationId') invitationId: string,
+    @Body() body: CreateCommentDto,
+  ) {
+    return this.widgetService.createComment(invitationId, body);
+  }
+
+  @Post('comments/:commentId/remove')
+  @ApiOperation({ summary: '방명록 게시글 삭제', tags: ['청첩장/방명록'] })
+  async deleteComment(
+    @Param('commentId') commentId: string,
+    @Body('password') password: string,
+  ) {
+    return this.widgetService.deleteComment(commentId, password);
+  }
+
+  @Put('comments/:commentId')
+  @ApiOperation({ summary: '방명록 게시글 수정', tags: ['청첩장/방명록'] })
+  async updateComment(
+    @Param('commentId') commentId: string,
+    @Body() body: Pick<CreateCommentDto, 'body' | 'password'>,
+  ) {
+    return this.widgetService.updateComment(commentId, body);
   }
 }
