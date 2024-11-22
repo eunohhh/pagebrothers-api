@@ -14,7 +14,7 @@ import { RowModel } from './entity/rsvp-row.entity';
 import { WidgetConfigModel } from './entity/widget-config.entity';
 import { WidgetItemModel } from './entity/widget-item.entity';
 import { WidgetController, WidgetRsvpController } from './widget.controller';
-import { WidgetService } from './widget.service';
+import { SeederService, WidgetService } from './widget.service';
 
 @Module({
   imports: [
@@ -36,8 +36,8 @@ import { WidgetService } from './widget.service';
     // CommonModule,
     // InvitationModule,
   ],
-  exports: [WidgetService],
+  exports: [WidgetService, SeederService],
   controllers: [WidgetController, WidgetRsvpController],
-  providers: [WidgetService],
+  providers: [WidgetService, SeederService],
 })
 export class WidgetModule {}

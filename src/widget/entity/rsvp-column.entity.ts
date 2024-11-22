@@ -1,8 +1,27 @@
-import { BaseModel } from 'src/common/entity/base.entity';
-import { Column, Entity } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { RowValueModel } from './rsvp-row-value.entity';
 
 @Entity()
-export class ColumnModel extends BaseModel {
+export class ColumnModel {
+  @PrimaryColumn()
+  id: string;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
   @Column({ nullable: false })
   title: string;
+
+  @OneToMany(() => RowValueModel, (rowValue) => rowValue.column)
+  rowValues: RowValueModel[];
 }

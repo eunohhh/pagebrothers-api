@@ -1,10 +1,27 @@
-import { BaseModel } from 'src/common/entity/base.entity';
 import { InvitationModel } from 'src/invitation/entity/invitation.entity';
-import { Column, Entity, Generated, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Generated,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { v4 as uuid } from 'uuid';
 import { RowValueModel } from './rsvp-row-value.entity';
-
 @Entity()
-export class RowModel extends BaseModel {
+export class RowModel {
+  @PrimaryColumn()
+  id: string = uuid();
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
   @Column()
   @Generated('increment')
   no: number;
@@ -15,7 +32,12 @@ export class RowModel extends BaseModel {
   @Column({ default: false, nullable: true })
   updated?: boolean;
 
-  @OneToMany(() => RowValueModel, (rowValue) => rowValue.row)
+  @Column()
+  sessionHash: string;
+
+  @OneToMany(() => RowValueModel, (rowValue) => rowValue.row, {
+    cascade: true,
+  })
   rowValues: RowValueModel[];
 
   @ManyToOne(() => InvitationModel, (invitation) => invitation.id, {

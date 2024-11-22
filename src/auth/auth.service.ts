@@ -76,18 +76,29 @@ export class AuthService {
   async createHash(invitationId: string) {
     const generatedUuid = uuid();
 
+    const hash = createHash('sha256')
+      .update(generatedUuid + invitationId)
+      .digest('hex');
+
     const row = await this.rowRepository.create({
       invitation: {
         id: invitationId,
       },
       id: generatedUuid,
+      sessionHash: hash,
     });
+
+    const existingRow = await this.rowRepository.findOneBy({
+      invitation: { id: invitationId },
+      sessionHash: hash,
+    });
+
+    if (existingRow) {
+      await this.rowRepository.delete(existingRow.id);
+    }
 
     await this.rowRepository.save(row);
 
-    const hash = createHash('sha256')
-      .update(generatedUuid + invitationId)
-      .digest('hex');
     return hash;
   }
 
@@ -103,6 +114,7 @@ export class AuthService {
         invitation: {
           id: invitationId,
         },
+        sessionHash: sessionId,
       },
     });
 
@@ -111,11 +123,15 @@ export class AuthService {
     }
 
     // 해싱 값과 비교
-    const expectedHash = createHash('sha256')
-      .update(row.id + invitationId)
-      .digest('hex');
+    // const expectedHash = createHash('sha256')
+    //   .update(row.id + invitationId)
+    //   .digest('hex');
 
-    if (sessionId !== expectedHash) {
+    // if (sessionId !== expectedHash) {
+    //   return false;
+    // }
+
+    if (sessionId !== row.sessionHash) {
       throw new UnauthorizedException('Invalid session cookie');
     }
 

@@ -1,18 +1,37 @@
-import { BaseModel } from 'src/common/entity/base.entity';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { ColumnModel } from './rsvp-column.entity';
 import { RowModel } from './rsvp-row.entity';
 
 @Entity()
-export class RowValueModel extends BaseModel {
+export class RowValueModel {
+  @PrimaryGeneratedColumn('uuid')
+  originalId: string;
+
+  @Column({ type: 'text' })
+  id: string;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
   @ManyToOne(() => RowModel, (row) => row.id, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'rowId' })
+  @JoinColumn()
   row: RowModel;
 
   @ManyToOne(() => ColumnModel, (column) => column.id, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'columnId' })
+  @JoinColumn()
   column: ColumnModel;
 
   @Column({ type: 'text', nullable: false })
-  value: string;
+  value: string | boolean | number;
 }
