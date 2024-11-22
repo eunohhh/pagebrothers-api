@@ -61,7 +61,21 @@ export class RegisterController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  @ApiOperation({ summary: '회원가입' })
+  @ApiOperation({
+    summary: '회원가입',
+    responses: {
+      '200': {
+        description: '회원가입 성공',
+        content: {
+          'application/json': {
+            example: {
+              id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+            },
+          },
+        },
+      },
+    },
+  })
   async register(@Body() body: RegisterUserDto) {
     return await this.authService.register(body);
   }

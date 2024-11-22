@@ -11,7 +11,25 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('me')
-  @ApiOperation({ summary: '나의 정보 불러오기' })
+  @ApiOperation({
+    summary: '나의 정보 불러오기',
+    responses: {
+      '200': {
+        description: '나의 정보 불러오기 성공',
+        content: {
+          'application/json': {
+            example: {
+              id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+              name: '하헌준',
+              email: 'pagesisters.cc@gmail.com',
+              profileImage: 'string',
+              provider: 'KAKAO',
+            },
+          },
+        },
+      },
+    },
+  })
   getUser(@ReqRes() { req }: { req: RequestWithUser }) {
     return this.usersService.getUserByEmail(req.user.email);
   }

@@ -204,7 +204,7 @@ export class InvitationService {
     if (!invitationMeta) {
       // 기존 메타 정보가 없으면 새로 생성
       await this.invitationMetaRepository.save({
-        ...body,
+        ...body.meta,
         invitation: { id },
       });
     } else {
@@ -212,7 +212,7 @@ export class InvitationService {
       await this.invitationMetaRepository.update(
         { id: invitationMeta.id },
         {
-          ...body,
+          ...body.meta,
           invitation: { id },
         },
       );
@@ -232,14 +232,14 @@ export class InvitationService {
 
     if (!invitationDesign) {
       await this.invitationDesignRepository.save({
-        ...body,
+        ...body.design,
         invitation: { id },
       });
     } else {
       await this.invitationDesignRepository.update(
         { id: invitationDesign.id },
         {
-          ...body,
+          ...body.design,
           invitation: { id },
         },
       );

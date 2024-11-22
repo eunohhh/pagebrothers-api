@@ -1,4 +1,4 @@
-import { PickType } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 import { RowModel } from '../entity/rsvp-row.entity';
 
@@ -7,6 +7,10 @@ import { RowModel } from '../entity/rsvp-row.entity';
 export class CreateRsvpAnswerDto extends PickType(RowModel, ['accepted']) {
   @IsNotEmpty()
   @IsString({ each: true })
+  @ApiProperty({
+    description: '응답 데이터',
+    required: true,
+  })
   formValues: {
     guestMeal: string;
     guestCount: number;

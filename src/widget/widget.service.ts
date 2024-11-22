@@ -43,7 +43,7 @@ export class WidgetService {
     const existingConfig = await this.widgetConfigRepository.findOneBy({ id });
     const updatedConfig = this.widgetConfigRepository.merge(
       existingConfig,
-      body,
+      body.config,
     );
     await this.widgetConfigRepository.save(updatedConfig);
 
@@ -252,10 +252,13 @@ export class WidgetService {
 
   // rsvp 응답 개수 조회
   async readRsvpAnswerCount(invitationId: string) {
-    const count = await this.rowRepository.count({
-      where: { invitation: { id: invitationId } },
+    const acceptedCount = await this.rowRepository.count({
+      where: { invitation: { id: invitationId }, accepted: true },
     });
-    return count;
+    const rejectedCount = await this.rowRepository.count({
+      where: { invitation: { id: invitationId }, accepted: false },
+    });
+    return { acceptedCount, rejectedCount };
   }
 
   // 방명록 게시글 조회
