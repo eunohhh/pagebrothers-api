@@ -4,7 +4,6 @@ import { ImageModel } from 'src/common/entity/image.entity';
 import {
   Column,
   Entity,
-  JoinColumn,
   JoinTable,
   ManyToMany,
   OneToMany,
@@ -73,6 +72,7 @@ export class WidgetConfigModel extends BaseModel {
   items?: string; //EventSequenceItem[] | IInvitationImage[] | QnaItem[];
 
   @ManyToMany(() => ImageModel, (image) => image.singleItem)
+  @JoinTable()
   singleItem?: ImageModel[];
 
   @Column({ nullable: true })
@@ -128,7 +128,7 @@ export class WidgetConfigModel extends BaseModel {
   dateFormatKey?: IntroDateFormatKey | DdayDateFormatKey; // = KO
 
   @ManyToMany(() => ImageModel, (image) => image.coverImage)
-  @JoinTable({ name: 'coverImage' })
+  @JoinTable()
   @Transform(({ value }) => (value === null ? undefined : value))
   coverImage?: ImageModel[] | null;
 
@@ -188,7 +188,7 @@ export class WidgetConfigModel extends BaseModel {
     cascade: true,
     eager: true,
   })
-  @JoinColumn({ name: 'extraFields' })
+  // @JoinColumn({ name: 'extraFields' })
   @Transform(({ value }) =>
     value === null || value.length === 0 ? undefined : value,
   )

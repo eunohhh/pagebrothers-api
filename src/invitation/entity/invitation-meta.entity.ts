@@ -28,7 +28,9 @@ export class InvitationMetaModel extends BaseModel {
   @Column()
   kakaotalkUseLocationButton: boolean;
 
-  @OneToOne(() => InvitationModel, (invitation) => invitation.meta)
+  @OneToOne(() => InvitationModel, (invitation) => invitation.meta, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'invitation_id' })
   invitation: InvitationModel;
 }

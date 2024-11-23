@@ -72,7 +72,6 @@ export class InvitationModel extends BaseModel {
 
   @OneToOne(() => InvitationMetaModel, (meta) => meta.invitation, {
     cascade: true,
-    onDelete: 'CASCADE',
   })
   @JoinColumn()
   meta: InvitationMetaModel;

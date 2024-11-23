@@ -201,22 +201,27 @@ export class InvitationService {
       invitation: { id },
     });
 
+    const newInvitationMeta = await this.invitationMetaRepository.create({
+      ...body.meta,
+    });
+
     if (!invitationMeta) {
       // 기존 메타 정보가 없으면 새로 생성
-      await this.invitationMetaRepository.save({
-        ...body.meta,
-        invitation: { id },
-      });
+      await this.invitationMetaRepository.save(newInvitationMeta);
     } else {
       // 기존 메타 정보가 있으면 업데이트
       await this.invitationMetaRepository.update(
         { id: invitationMeta.id },
         {
           ...body.meta,
-          invitation: { id },
         },
       );
     }
+
+    await this.invitationRepository.update(id, {
+      title: body.meta.title,
+      meta: { id: invitationMeta.id },
+    });
 
     return await this.invitationRepository.findOne({
       where: { id },
