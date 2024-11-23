@@ -4,6 +4,8 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { PassportModule } from '@nestjs/passport';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AdminModule } from './admin/admin.module';
+import { TemplateModel } from './admin/entity/template.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -73,6 +75,7 @@ import { WidgetModule } from './widget/widget.module';
         RowModel,
         RowValueModel,
         CommentModel,
+        TemplateModel,
       ],
       // migrations: ['src/migrations/*.ts'],
       synchronize: true,
@@ -82,6 +85,7 @@ import { WidgetModule } from './widget/widget.module';
     UsersModule,
     InvitationModule,
     WidgetModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [
