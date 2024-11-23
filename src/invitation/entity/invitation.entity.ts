@@ -107,4 +107,10 @@ export class InvitationModel extends BaseModel {
     onDelete: 'CASCADE',
   })
   comments: CommentModel[];
+
+  @ManyToMany(() => UsersModel, (user) => user.editorInvitations, {
+    onDelete: 'CASCADE',
+  })
+  @JoinTable()
+  editors?: UsersModel[];
 }

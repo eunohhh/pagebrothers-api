@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import * as multer from 'multer'; // 이렇게 해야 에러 안남
 import { extname } from 'path';
 import { InvitationModel } from 'src/invitation/entity/invitation.entity';
-import { InvitationModule } from 'src/invitation/invitation.module';
+import { UsersModel } from 'src/users/entity/users.entity';
 import { v4 as uuid } from 'uuid';
 import { CommonController } from './common.controller';
 import { CommonService } from './common.service';
@@ -13,8 +13,7 @@ import { ImageModel } from './entity/image.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ImageModel, InvitationModel]),
-    InvitationModule,
+    TypeOrmModule.forFeature([ImageModel, InvitationModel, UsersModel]),
     MulterModule.register({
       limits: {
         // 바이트입력

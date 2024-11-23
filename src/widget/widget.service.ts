@@ -5,6 +5,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CommonService } from 'src/common/common.service';
 import { InvitationModel } from 'src/invitation/entity/invitation.entity';
 import { DataSource, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
@@ -36,6 +37,7 @@ export class WidgetService {
     private readonly commentRepository: Repository<CommentModel>,
     @InjectRepository(InvitationModel)
     private readonly invitationRepository: Repository<InvitationModel>,
+    private readonly commonService: CommonService,
   ) {}
 
   // 위젯 설정 수정
@@ -51,10 +53,17 @@ export class WidgetService {
     );
     await this.widgetConfigRepository.save(updatedConfig);
 
-    return this.widgetRepository.findOne({
+    const result = await this.widgetRepository.findOne({
       where: { id: widgetId },
-      relations: ['config'],
+      relations: ['config', 'invitation'],
     });
+
+    await this.commonService.addInvitationEditor(
+      result.invitation.id,
+      result.invitation.user.id,
+    );
+
+    return result;
   }
 
   // 위젯 인덱스 수정
@@ -112,10 +121,17 @@ export class WidgetService {
       await widgetRepository.save(targetWidget);
     });
 
-    return this.widgetRepository.findOne({
+    const result = await this.widgetRepository.findOne({
       where: { id },
       relations: ['config'],
     });
+
+    await this.commonService.addInvitationEditor(
+      result.invitation.id,
+      result.invitation.user.id,
+    );
+
+    return result;
   }
 
   // 위젯 삭제

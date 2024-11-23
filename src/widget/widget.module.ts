@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
+import { CommonModule } from 'src/common/common.module';
 import { ImageModel } from 'src/common/entity/image.entity';
 import { InvitationDesignModel } from 'src/invitation/entity/invitation-design.entity';
 import { InvitationMetaModel } from 'src/invitation/entity/invitation-meta.entity';
 import { InvitationOwnerModel } from 'src/invitation/entity/invitation-owner.entity';
 import { InvitationModel } from 'src/invitation/entity/invitation.entity';
 import { VisitsCountModel } from 'src/invitation/entity/visits-count.entity';
+import { UsersModel } from 'src/users/entity/users.entity';
 import { CommentModel } from './entity/comment.entity';
 import { ColumnModel } from './entity/rsvp-column.entity';
 import { RsvpExtraFieldModel } from './entity/rsvp-extra-fields.entity';
@@ -37,8 +39,10 @@ import { SeederService, WidgetService } from './widget.service';
       RowModel,
       RowValueModel,
       CommentModel,
+      UsersModel,
     ]),
     AuthModule,
+    CommonModule,
   ],
   exports: [WidgetService, SeederService],
   controllers: [

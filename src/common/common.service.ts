@@ -11,6 +11,7 @@ import { promises } from 'fs';
 import { basename, join } from 'path';
 import * as sharp from 'sharp';
 import { InvitationModel } from 'src/invitation/entity/invitation.entity';
+import { UsersModel } from 'src/users/entity/users.entity';
 import { QueryRunner, Repository } from 'typeorm';
 import {
   ENV_AWS_ACCESS_KEY_ID,
@@ -41,6 +42,8 @@ export class CommonService {
     private readonly imageRepository: Repository<ImageModel>,
     @InjectRepository(InvitationModel)
     private readonly invitationRepository: Repository<InvitationModel>,
+    @InjectRepository(UsersModel)
+    private readonly usersRepository: Repository<UsersModel>,
     private readonly configService: ConfigService,
   ) {
     // JS SDK v3 does not support global configuration.
@@ -188,5 +191,29 @@ export class CommonService {
     if (!image) throw new NotFoundException('이미지가 없습니다!');
 
     return image;
+  }
+
+  // 청첩장 생성, 업데이트, 삭제 시 초대장 편집자 추가
+  async addInvitationEditor(invitationId: string, editorId: string) {
+    const invitation = await this.invitationRepository.findOneBy({
+      id: invitationId,
+    });
+
+    const editor = await this.usersRepository.findOneBy({ id: editorId });
+
+    if (!editor) {
+      throw new NotFoundException('편집자를 찾을 수 없습니다!');
+    }
+
+    if (!invitation.editors) {
+      invitation.editors = [];
+    }
+
+    if (invitation.editors.find((user) => user.id === editorId)) {
+      return;
+    }
+
+    invitation.editors.push(editor);
+    await this.invitationRepository.save(invitation);
   }
 }

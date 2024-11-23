@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CommonService } from 'src/common/common.service';
 import { basicRsvpExtraFields } from 'src/widget/data/basic-rsvp.data';
 import { CreateWidgetDto } from 'src/widget/dto/create-widget.dto';
 import { WidgetConfigModel } from 'src/widget/entity/widget-config.entity';
@@ -33,6 +34,7 @@ const relations = [
   'images',
   'meta',
   'design',
+  'editors',
   // 'order',
 ];
 
@@ -56,6 +58,7 @@ export class InvitationService {
     @InjectRepository(OrderModel)
     private readonly orderRepository: Repository<OrderModel>,
     private readonly dataSource: DataSource,
+    private readonly commonService: CommonService,
   ) {}
 
   // 청첩장 조회
@@ -91,15 +94,15 @@ export class InvitationService {
   }
 
   // 청첩장 생성
-  async createInvitation(id: string, body: CreateInvitationDto) {
-    if (!id) throw new BadRequestException('유저 아이디가 없습니다!');
+  async createInvitation(userId: string, body: CreateInvitationDto) {
+    if (!userId) throw new BadRequestException('유저 아이디가 없습니다!');
 
     if (!body.owners) throw new BadRequestException('주인 정보가 없습니다!');
 
     const invitationId = uuid();
 
     const invitation = await this.invitationRepository.create({
-      user: { id },
+      user: { id: userId },
       id: invitationId,
       eventAt: body.eventAt
         ? body.eventAt
@@ -134,6 +137,8 @@ export class InvitationService {
 
     await this.invitationOwnerRepository.save(owners);
 
+    await this.commonService.addInvitationEditor(savedInvitation.id, userId);
+
     const result = await this.invitationRepository.findOne({
       where: { id: savedInvitation.id },
       relations,
@@ -148,9 +153,14 @@ export class InvitationService {
   async updateEventInfo(id: string, body: UpdateEventInfoDto) {
     if (!id) throw new BadRequestException('청첩장 아이디가 없습니다!');
 
-    const invitation = await this.invitationRepository.findOneBy({ id });
+    const invitation = await this.invitationRepository.findOne({
+      where: { id },
+      relations: [...relations, 'user'],
+    });
 
     if (!invitation) throw new NotFoundException('청첩장 정보가 없습니다!');
+
+    await this.commonService.addInvitationEditor(id, invitation.user.id);
 
     await this.invitationRepository.update(id, body);
     return await this.invitationRepository.findOne({
@@ -163,7 +173,10 @@ export class InvitationService {
   async updateOwners(id: string, body: UpdateOwnersDto) {
     if (!id) throw new BadRequestException('청첩장 아이디가 없습니다!');
 
-    const invitation = await this.invitationRepository.findOneBy({ id });
+    const invitation = await this.invitationRepository.findOne({
+      where: { id },
+      relations: [...relations, 'user'],
+    });
 
     if (!invitation) throw new NotFoundException('청첩장 정보가 없습니다!');
 
@@ -183,6 +196,11 @@ export class InvitationService {
     });
     await this.invitationOwnerRepository.save(owners);
 
+    await this.commonService.addInvitationEditor(
+      invitation.id,
+      invitation.user.id,
+    );
+
     return await this.invitationRepository.findOne({
       where: { id },
       relations,
@@ -200,8 +218,8 @@ export class InvitationService {
 
   // 청첩장 메타 정보 수정
   async updateMeta(id: string, body: UpdateMetaDto) {
-    const invitationMeta = await this.invitationMetaRepository.findOneBy({
-      invitation: { id },
+    const invitationMeta = await this.invitationMetaRepository.findOne({
+      where: { invitation: { id } },
     });
 
     const newInvitationMetaId = uuid();
@@ -234,10 +252,14 @@ export class InvitationService {
       meta: metaEntity, // 명확한 참조 전달
     });
 
-    return await this.invitationRepository.findOne({
+    const result = await this.invitationRepository.findOne({
       where: { id },
-      relations,
+      relations: [...relations, 'user'],
     });
+
+    await this.commonService.addInvitationEditor(id, result.user.id);
+
+    return result;
   }
 
   // 청첩장 디자인 정보 수정
@@ -274,10 +296,14 @@ export class InvitationService {
       design: designEntity,
     });
 
-    return await this.invitationRepository.findOne({
+    const result = await this.invitationRepository.findOne({
       where: { id },
-      relations,
+      relations: [...relations, 'user'],
     });
+
+    await this.commonService.addInvitationEditor(id, result.user.id);
+
+    return result;
   }
 
   // 청첩장 방문 횟수 수정
@@ -393,7 +419,10 @@ export class InvitationService {
 
   // 위젯 생성
   async createWidget(id: string, body: CreateWidgetDto) {
-    const invitation = await this.invitationRepository.findOneBy({ id });
+    const invitation = await this.invitationRepository.findOne({
+      where: { id },
+      relations: [...relations, 'user'],
+    });
     if (!invitation) throw new NotFoundException('청첩장 정보가 없습니다!');
 
     const existingWidget = await this.widgetRepository.findOne({
@@ -479,10 +508,14 @@ export class InvitationService {
       await this.widgetRepository.save(widget);
     }
 
-    return this.widgetRepository.findOne({
+    const result = await this.widgetRepository.findOne({
       where: { id: widgetId },
       relations: ['config'],
     });
+
+    await this.commonService.addInvitationEditor(id, invitation.user.id);
+
+    return result;
   }
 
   // 공유키로 청첩장 조회

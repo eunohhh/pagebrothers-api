@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CommonModule } from 'src/common/common.module';
 import { ImageModel } from 'src/common/entity/image.entity';
+import { UsersModel } from 'src/users/entity/users.entity';
 import { CommentModel } from 'src/widget/entity/comment.entity';
 import { RsvpExtraFieldModel } from 'src/widget/entity/rsvp-extra-fields.entity';
 import { WidgetModule } from 'src/widget/widget.module';
@@ -33,8 +35,10 @@ import { InvitationService } from './invitation.service';
       RsvpExtraFieldModel,
       OrderModel,
       CommentModel,
+      UsersModel,
     ]),
     WidgetModule,
+    CommonModule,
   ],
   exports: [InvitationService],
   controllers: [
