@@ -37,7 +37,9 @@ export class CommentModel {
   @Exclude({ toPlainOnly: true })
   password: string;
 
-  @ManyToOne(() => InvitationModel, (invitation) => invitation.comments)
+  @ManyToOne(() => InvitationModel, (invitation) => invitation.comments, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   invitation: InvitationModel;
 }

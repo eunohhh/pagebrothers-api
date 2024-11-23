@@ -19,7 +19,9 @@ export class InvitationDesignModel extends BaseModel {
   @Column()
   zoomDisabled: boolean;
 
-  @OneToOne(() => InvitationModel, (invitation) => invitation.meta)
+  @OneToOne(() => InvitationModel, (invitation) => invitation.design, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'invitation_id' })
   invitation: InvitationModel;
 }

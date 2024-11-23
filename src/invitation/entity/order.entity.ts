@@ -32,7 +32,9 @@ export class OrderModel extends BaseModel {
   @Column()
   isFreeOrder: boolean = false;
 
-  @OneToOne(() => InvitationModel, (invitation) => invitation.order)
+  @OneToOne(() => InvitationModel, (invitation) => invitation.order, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   invitation: InvitationModel;
 

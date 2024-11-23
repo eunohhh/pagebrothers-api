@@ -39,16 +39,20 @@ export class WidgetService {
   ) {}
 
   // 위젯 설정 수정
-  async updateWidgetConfig(id: string, body: UpdateWidgetConfigDto) {
-    const existingConfig = await this.widgetConfigRepository.findOneBy({ id });
+  async updateWidgetConfig(widgetId: string, body: UpdateWidgetConfigDto) {
+    const existingWidget = await this.widgetRepository.findOne({
+      where: { id: widgetId },
+      relations: ['config'],
+    });
+
     const updatedConfig = this.widgetConfigRepository.merge(
-      existingConfig,
+      existingWidget.config,
       body.config,
     );
     await this.widgetConfigRepository.save(updatedConfig);
 
     return this.widgetRepository.findOne({
-      where: { config: { id } },
+      where: { id: widgetId },
       relations: ['config'],
     });
   }

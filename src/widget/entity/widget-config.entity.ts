@@ -66,14 +66,14 @@ export class WidgetConfigModel extends BaseModel {
   @Transform(({ value }) => (value === null ? undefined : value))
   accounts?: Record<string, OwnerAccountGroup>;
 
-  // 추후 수정 요망
-  @Column({ nullable: true })
+  @Column({ type: 'jsonb', nullable: true })
   @Transform(({ value }) => (value === null ? undefined : value))
-  items?: string; //EventSequenceItem[] | IInvitationImage[] | QnaItem[];
+  items?: Record<string, string>[];
 
   @ManyToMany(() => ImageModel, (image) => image.singleItem)
   @JoinTable()
-  singleItem?: ImageModel[];
+  @Transform(({ value }) => (value === null ? undefined : value))
+  singleItem?: ImageModel[] | null;
 
   @Column({ nullable: true })
   @Transform(({ value }) => (value === null ? undefined : value))
