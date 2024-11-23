@@ -58,8 +58,8 @@ export class WidgetService {
   }
 
   // 위젯 인덱스 수정
-  async updateWidgetIndex(id: string, index: number) {
-    if (index < 0) {
+  async updateWidgetIndex(id: string, newIndex: number) {
+    if (newIndex < 0) {
       throw new BadRequestException('인덱스는 음수일 수 없습니다!');
     }
 
@@ -70,8 +70,11 @@ export class WidgetService {
     if (!targetWidget) {
       throw new NotFoundException('위젯을 찾을 수 없습니다!');
     }
+
+    const currentIndex = targetWidget.index;
+
     // 인트로 위젯은 인덱스를 바꿀 수 없음
-    if (targetWidget.type !== 'INTRO' && index === 0) {
+    if (targetWidget.type !== 'INTRO' && newIndex === 0) {
       throw new BadRequestException(
         '인트로 위젯을 제외한 위젯의 인덱스는 0일 수 없습니다!',
       );
@@ -80,16 +83,32 @@ export class WidgetService {
     await this.dataSource.transaction(async (manager) => {
       const widgetRepository = manager.getRepository(WidgetItemModel);
 
-      // 2. 충돌하는 위젯의 인덱스를 한 번에 증가
-      await manager
-        .createQueryBuilder()
-        .update(WidgetItemModel)
-        .set({ index: () => `"index" + 1` }) // SQL에서 "index" 값을 +1
-        .where('index >= :newIndex', { newIndex: index })
-        .execute();
+      if (newIndex < currentIndex) {
+        // 인덱스 감소: 기존 인덱스와 새 인덱스 사이의 위젯을 +1
+        await manager
+          .createQueryBuilder()
+          .update(WidgetItemModel)
+          .set({ index: () => `"index" + 1` })
+          .where('index >= :newIndex AND index < :currentIndex', {
+            newIndex,
+            currentIndex,
+          })
+          .execute();
+      } else if (newIndex > currentIndex) {
+        // 인덱스 증가: 기존 인덱스와 새 인덱스 사이의 위젯을 -1
+        await manager
+          .createQueryBuilder()
+          .update(WidgetItemModel)
+          .set({ index: () => `"index" - 1` })
+          .where('index > :currentIndex AND index <= :newIndex', {
+            currentIndex,
+            newIndex,
+          })
+          .execute();
+      }
 
-      // 3. 대상 위젯의 인덱스를 업데이트
-      targetWidget.index = index;
+      // 대상 위젯의 인덱스 업데이트
+      targetWidget.index = newIndex;
       await widgetRepository.save(targetWidget);
     });
 

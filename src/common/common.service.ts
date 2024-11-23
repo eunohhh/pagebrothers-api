@@ -167,6 +167,8 @@ export class CommonService {
       imageObj.dimensions = { width, height };
     }
 
+    // await this.createImage(imageObj);
+
     if (this.configService.get<string>(ENV_ENV) === 'production') {
       await this.createImage(imageObj);
     } else {
