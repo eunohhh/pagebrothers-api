@@ -201,14 +201,18 @@ export class InvitationService {
       invitation: { id },
     });
 
-    const newInvitationMeta = await this.invitationMetaRepository.create({
+    const newInvitationMetaId = uuid();
+    const newInvitationMeta = this.invitationMetaRepository.create({
+      id: newInvitationMetaId,
       ...body.meta,
       invitation: { id },
     });
 
+    let metaEntity: InvitationMetaModel;
+
     if (!invitationMeta) {
       // 기존 메타 정보가 없으면 새로 생성
-      await this.invitationMetaRepository.save(newInvitationMeta);
+      metaEntity = await this.invitationMetaRepository.save(newInvitationMeta);
     } else {
       // 기존 메타 정보가 있으면 업데이트
       await this.invitationMetaRepository.update(
@@ -218,11 +222,13 @@ export class InvitationService {
           invitation: { id },
         },
       );
+      metaEntity = invitationMeta;
     }
 
-    await this.invitationRepository.update(id, {
+    await this.invitationRepository.save({
+      id,
       title: body.meta.title,
-      meta: { id: invitationMeta.id },
+      meta: metaEntity, // 명확한 참조 전달
     });
 
     return await this.invitationRepository.findOne({
