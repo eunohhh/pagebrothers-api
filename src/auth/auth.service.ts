@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'crypto';
+import { UpdateUserRoleDto } from 'src/admin/dto/update-user.dto';
 import { ENV_JWT_SECRET_KEY } from 'src/common/const/env-keys.const';
 import { RequestWithUser } from 'src/common/type/common.type';
 import { UsersService } from 'src/users/users.service';
@@ -136,5 +137,9 @@ export class AuthService {
     }
 
     return true; // 검증 성공
+  }
+
+  async updateUserRole(dto: UpdateUserRoleDto) {
+    return this.usersService.updateUserRole(dto);
   }
 }

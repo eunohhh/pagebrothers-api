@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from 'src/auth/auth.module';
 import { ImageModel } from 'src/common/entity/image.entity';
 import { InvitationDesignModel } from 'src/invitation/entity/invitation-design.entity';
 import { InvitationMetaModel } from 'src/invitation/entity/invitation-meta.entity';
@@ -35,6 +36,7 @@ import { TemplateModel } from './entity/template.entity';
     ]),
     WidgetModule,
     InvitationModule,
+    AuthModule,
   ],
   controllers: [AdminController],
   providers: [AdminService],
