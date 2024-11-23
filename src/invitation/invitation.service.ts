@@ -63,6 +63,9 @@ export class InvitationService {
     const result = await this.invitationRepository.findOne({
       where: { id },
       relations,
+      order: {
+        widgets: { index: 'ASC' },
+      },
     });
 
     if (!result) throw new NotFoundException('청첩장 정보가 없습니다!');
