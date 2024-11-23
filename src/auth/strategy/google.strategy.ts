@@ -43,11 +43,11 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     const { picture } = profile._json;
 
     const user = {
-      provider: 'google',
+      provider: 'GOOGLE',
       providerId: id,
       email: emails[0].value,
-      displayName: name.givenName + ' ' + name.familyName,
-      thumbnail_image: picture,
+      name: name.givenName + ' ' + name.familyName,
+      profileImage: picture,
       clientProtocol,
       clientHost,
       redirect_uri: redirectUri,

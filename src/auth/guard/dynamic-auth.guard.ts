@@ -38,6 +38,7 @@ export class DynamicAuthGuard implements CanActivate {
       const request = context.switchToHttp().getRequest();
 
       // 프로토콜과 호스트 정보를 가져옴
+      // 요청을 실제로 보낸 클라이언트의 프로토콜과 호스트를 가져옴
       const protocol = request.protocol;
       const host = request.get('host');
 
@@ -50,7 +51,7 @@ export class DynamicAuthGuard implements CanActivate {
 
       // state에 포함할 객체 생성
       let state: StateType = {
-        protocol: clientProtocol,
+        protocol: clientProtocol ?? 'https',
         host: clientHost,
       };
 

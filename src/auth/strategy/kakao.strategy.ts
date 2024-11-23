@@ -50,9 +50,9 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
     return {
       provider: 'kakao',
       providerId: id,
-      username,
+      name: username,
       email,
-      thumbnail_image,
+      profileImage: thumbnail_image,
       clientProtocol,
       clientHost,
       redirect_uri: redirectUri,
