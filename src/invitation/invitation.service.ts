@@ -203,6 +203,7 @@ export class InvitationService {
 
     const newInvitationMeta = await this.invitationMetaRepository.create({
       ...body.meta,
+      invitation: { id },
     });
 
     if (!invitationMeta) {
@@ -214,6 +215,7 @@ export class InvitationService {
         { id: invitationMeta.id },
         {
           ...body.meta,
+          invitation: { id },
         },
       );
     }
@@ -235,11 +237,13 @@ export class InvitationService {
       invitation: { id },
     });
 
+    const newInvitationDesign = await this.invitationDesignRepository.create({
+      ...body.design,
+      invitation: { id },
+    });
+
     if (!invitationDesign) {
-      await this.invitationDesignRepository.save({
-        ...body.design,
-        invitation: { id },
-      });
+      await this.invitationDesignRepository.save(newInvitationDesign);
     } else {
       await this.invitationDesignRepository.update(
         { id: invitationDesign.id },
@@ -249,6 +253,10 @@ export class InvitationService {
         },
       );
     }
+
+    await this.invitationRepository.update(id, {
+      design: { id: invitationDesign.id },
+    });
 
     return await this.invitationRepository.findOne({
       where: { id },
