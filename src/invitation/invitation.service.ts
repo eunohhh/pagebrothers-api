@@ -426,6 +426,8 @@ export class InvitationService {
           id: existingWidget.config.id,
         });
 
+        if (existingWidget.index === body.index)
+          throw new BadRequestException('위젯 인덱스가 동일합니다!');
         // 기존 엔티티와 새로운 데이터를 병합
         const updatedConfig = this.widgetConfigRepository.merge(
           existingConfig,
