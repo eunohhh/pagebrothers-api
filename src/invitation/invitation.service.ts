@@ -243,13 +243,18 @@ export class InvitationService {
       invitation: { id },
     });
 
-    const newInvitationDesign = await this.invitationDesignRepository.create({
+    const newInvitationDesignId = uuid();
+    const newInvitationDesign = this.invitationDesignRepository.create({
+      id: newInvitationDesignId,
       ...body.design,
       invitation: { id },
     });
 
+    let designEntity: InvitationDesignModel;
+
     if (!invitationDesign) {
-      await this.invitationDesignRepository.save(newInvitationDesign);
+      designEntity =
+        await this.invitationDesignRepository.save(newInvitationDesign);
     } else {
       await this.invitationDesignRepository.update(
         { id: invitationDesign.id },
@@ -258,10 +263,12 @@ export class InvitationService {
           invitation: { id },
         },
       );
+      designEntity = invitationDesign;
     }
 
-    await this.invitationRepository.update(id, {
-      design: { id: invitationDesign.id },
+    await this.invitationRepository.save({
+      id,
+      design: designEntity,
     });
 
     return await this.invitationRepository.findOne({
