@@ -4,6 +4,7 @@ import { CommonModule } from 'src/common/common.module';
 import { ImageModel } from 'src/common/entity/image.entity';
 import { UsersModel } from 'src/users/entity/users.entity';
 import { CommentModel } from 'src/widget/entity/comment.entity';
+import { ColumnModel } from 'src/widget/entity/rsvp-column.entity';
 import { RsvpExtraFieldModel } from 'src/widget/entity/rsvp-extra-fields.entity';
 import { WidgetModule } from 'src/widget/widget.module';
 import { WidgetConfigModel } from '../widget/entity/widget-config.entity';
@@ -35,6 +36,7 @@ import { InvitationService } from './invitation.service';
       RsvpExtraFieldModel,
       OrderModel,
       CommentModel,
+      ColumnModel,
       UsersModel,
     ]),
     WidgetModule,

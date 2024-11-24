@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CommonService } from 'src/common/common.service';
 import { basicRsvpExtraFields } from 'src/widget/data/basic-rsvp.data';
 import { CreateWidgetDto } from 'src/widget/dto/create-widget.dto';
+import { ColumnModel } from 'src/widget/entity/rsvp-column.entity';
 import { WidgetConfigModel } from 'src/widget/entity/widget-config.entity';
 import { WidgetItemModel } from 'src/widget/entity/widget-item.entity';
 import { WidgetService } from 'src/widget/widget.service';
@@ -69,6 +70,8 @@ export class InvitationService {
     private readonly widgetRepository: Repository<WidgetItemModel>,
     @InjectRepository(WidgetConfigModel)
     private readonly widgetConfigRepository: Repository<WidgetConfigModel>,
+    @InjectRepository(ColumnModel)
+    private readonly columnRepository: Repository<ColumnModel>,
     @InjectRepository(OrderModel)
     private readonly orderRepository: Repository<OrderModel>,
     private readonly dataSource: DataSource,
@@ -506,6 +509,8 @@ export class InvitationService {
     widgetId: string,
     body: CreateWidgetDto,
   ) {
+    const existingColumns = await this.columnRepository.find();
+
     const configId = uuid();
     const config =
       body.type === 'RSVP'
@@ -514,13 +519,26 @@ export class InvitationService {
             id: configId,
             extraFields:
               body.config.extraFields?.length > 0
-                ? body.config.extraFields
-                : basicRsvpExtraFields.map((field) => ({ ...field })),
+                ? body.config.extraFields.map((field) => ({
+                    ...field,
+                    id: existingColumns.find(
+                      (column) => column.title === field.label,
+                    )?.id,
+                  }))
+                : basicRsvpExtraFields.map((field) => ({
+                    ...field,
+                    id: existingColumns.find(
+                      (column) => column.title === field.label,
+                    )?.id,
+                  })),
           })
         : await this.widgetConfigRepository.create({
             ...body.config,
             id: configId,
           });
+
+    //rsvp 일 경우 추가적인 로직 작성 필요
+
     await this.widgetConfigRepository.save(config);
 
     const widget = this.widgetRepository.create({

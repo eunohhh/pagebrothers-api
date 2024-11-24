@@ -176,6 +176,8 @@ export class WidgetService {
   ) {
     // column에서 모든 값가져오기
     const columns = await this.columnRepository.find();
+    // 어느쪽 손님인지 확인하는 문항의 id 인데,
+    // '' (문항 타이틀) 값은 기본값이고, 변경될 수 있기 때문에 추후 로직 수정 요망
     const whosGuestUuid = columns.find((col) => col.title === '')?.id;
     const guestCountUuid = columns.find(
       (col) => col.title === '참석 인원 (본인 포함)',
