@@ -340,12 +340,34 @@ export class WidgetService {
   }
 
   // 방명록 게시글 작성
-  async createComment(invitationId: string, body: CreateCommentDto) {
+  async createComment(
+    invitationId: string,
+    body: CreateCommentDto | Partial<CreateCommentDto>,
+    isFirstComment: boolean = false,
+  ) {
     const invitation = await this.invitationRepository.findOneBy({
       id: invitationId,
     });
     if (!invitation) {
       throw new NotFoundException('초대장을 찾을 수 없습니다!');
+    }
+
+    if (isFirstComment) {
+      const comment = this.commentRepository.create({
+        invitation: { id: invitationId },
+        id: uuid(),
+        author: '페이지시스터즈팀',
+        authorProfileImage: '\uD83D\uDC30',
+        body: '두 분의 결혼을 진심으로 축하드립니다 \uD83D\uDE0A\n행복하고 좋은 일만 가득하시길 바랄게요! ',
+        children: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        password: '1234',
+      });
+      await this.commentRepository.save(comment);
+      return {
+        id: comment.id,
+      };
     }
 
     const comment = this.commentRepository.create({
