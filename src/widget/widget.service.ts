@@ -72,9 +72,10 @@ export class WidgetService {
       throw new BadRequestException('인덱스는 음수일 수 없습니다!');
     }
 
-    // 1. 대상 위젯 가져오기
+    // 대상 위젯 가져오기
     const targetWidget = await this.widgetRepository.findOne({
       where: { id },
+      relations: ['invitation'],
     });
     if (!targetWidget) {
       throw new NotFoundException('위젯을 찾을 수 없습니다!');
@@ -82,8 +83,13 @@ export class WidgetService {
 
     const currentIndex = targetWidget.index;
 
-    // 인트로 위젯은 인덱스를 바꿀 수 없음
-    if (targetWidget.type !== 'INTRO' && newIndex === 0) {
+    // 인트로 위젯에 대한 예외 처리
+    if (targetWidget.type === 'INTRO') {
+      throw new BadRequestException(
+        '인트로 위젯의 인덱스는 변경할 수 없습니다!',
+      );
+    }
+    if (newIndex === 0) {
       throw new BadRequestException(
         '인트로 위젯을 제외한 위젯의 인덱스는 0일 수 없습니다!',
       );
@@ -92,13 +98,21 @@ export class WidgetService {
     await this.dataSource.transaction(async (manager) => {
       const widgetRepository = manager.getRepository(WidgetItemModel);
 
+      // 동일한 invitation의 위젯만 대상으로 함
+      const invitationId = targetWidget.invitation.id;
+
+      // 1. 대상 위젯의 인덱스를 임시 값으로 설정하여 인덱스 중복 방지
+      targetWidget.index = -1;
+      await widgetRepository.save(targetWidget);
+
       if (newIndex < currentIndex) {
         // 인덱스 감소: 기존 인덱스와 새 인덱스 사이의 위젯을 +1
         await manager
           .createQueryBuilder()
           .update(WidgetItemModel)
           .set({ index: () => `"index" + 1` })
-          .where('index >= :newIndex AND index < :currentIndex', {
+          .where('invitationId = :invitationId', { invitationId })
+          .andWhere('index >= :newIndex AND index < :currentIndex', {
             newIndex,
             currentIndex,
           })
@@ -109,21 +123,22 @@ export class WidgetService {
           .createQueryBuilder()
           .update(WidgetItemModel)
           .set({ index: () => `"index" - 1` })
-          .where('index > :currentIndex AND index <= :newIndex', {
+          .where('invitationId = :invitationId', { invitationId })
+          .andWhere('index > :currentIndex AND index <= :newIndex', {
             currentIndex,
             newIndex,
           })
           .execute();
       }
 
-      // 대상 위젯의 인덱스 업데이트
+      // 3. 대상 위젯의 인덱스를 새로운 값으로 설정
       targetWidget.index = newIndex;
       await widgetRepository.save(targetWidget);
     });
 
     const result = await this.widgetRepository.findOne({
       where: { id },
-      relations: ['config'],
+      relations: ['config', 'invitation', 'invitation.user'],
     });
 
     await this.commonService.addInvitationEditor(
