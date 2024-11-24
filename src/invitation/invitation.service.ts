@@ -421,6 +421,7 @@ export class InvitationService {
 
     const newInvitation = await this.invitationRepository.create({
       ...invitation,
+      share: null,
       user: { id: userId },
       owners: invitation.owners,
       widgets: invitation.widgets,
