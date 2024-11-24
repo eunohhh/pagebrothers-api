@@ -72,9 +72,10 @@ export class WidgetService {
       throw new BadRequestException('인덱스는 음수일 수 없습니다!');
     }
 
-    // 1. 대상 위젯 가져오기
+    // 대상 위젯 가져오기
     const targetWidget = await this.widgetRepository.findOne({
       where: { id },
+      relations: ['invitation'],
     });
     if (!targetWidget) {
       throw new NotFoundException('위젯을 찾을 수 없습니다!');
@@ -82,8 +83,13 @@ export class WidgetService {
 
     const currentIndex = targetWidget.index;
 
-    // 인트로 위젯은 인덱스를 바꿀 수 없음
-    if (targetWidget.type !== 'INTRO' && newIndex === 0) {
+    // 인트로 위젯에 대한 예외 처리
+    if (targetWidget.type === 'INTRO') {
+      throw new BadRequestException(
+        '인트로 위젯의 인덱스는 변경할 수 없습니다!',
+      );
+    }
+    if (newIndex === 0) {
       throw new BadRequestException(
         '인트로 위젯을 제외한 위젯의 인덱스는 0일 수 없습니다!',
       );
@@ -92,13 +98,21 @@ export class WidgetService {
     await this.dataSource.transaction(async (manager) => {
       const widgetRepository = manager.getRepository(WidgetItemModel);
 
+      // 동일한 invitation의 위젯만 대상으로 함
+      const invitationId = targetWidget.invitation.id;
+
+      // 1. 대상 위젯의 인덱스를 임시 값으로 설정하여 인덱스 중복 방지
+      targetWidget.index = -1;
+      await widgetRepository.save(targetWidget);
+
       if (newIndex < currentIndex) {
         // 인덱스 감소: 기존 인덱스와 새 인덱스 사이의 위젯을 +1
         await manager
           .createQueryBuilder()
           .update(WidgetItemModel)
           .set({ index: () => `"index" + 1` })
-          .where('index >= :newIndex AND index < :currentIndex', {
+          .where('invitationId = :invitationId', { invitationId })
+          .andWhere('index >= :newIndex AND index < :currentIndex', {
             newIndex,
             currentIndex,
           })
@@ -109,21 +123,22 @@ export class WidgetService {
           .createQueryBuilder()
           .update(WidgetItemModel)
           .set({ index: () => `"index" - 1` })
-          .where('index > :currentIndex AND index <= :newIndex', {
+          .where('invitationId = :invitationId', { invitationId })
+          .andWhere('index > :currentIndex AND index <= :newIndex', {
             currentIndex,
             newIndex,
           })
           .execute();
       }
 
-      // 대상 위젯의 인덱스 업데이트
+      // 3. 대상 위젯의 인덱스를 새로운 값으로 설정
       targetWidget.index = newIndex;
       await widgetRepository.save(targetWidget);
     });
 
     const result = await this.widgetRepository.findOne({
       where: { id },
-      relations: ['config'],
+      relations: ['config', 'invitation', 'invitation.user'],
     });
 
     await this.commonService.addInvitationEditor(
@@ -176,6 +191,8 @@ export class WidgetService {
   ) {
     // column에서 모든 값가져오기
     const columns = await this.columnRepository.find();
+    // 어느쪽 손님인지 확인하는 문항의 id 인데,
+    // '' (문항 타이틀) 값은 기본값이고, 변경될 수 있기 때문에 추후 로직 수정 요망
     const whosGuestUuid = columns.find((col) => col.title === '')?.id;
     const guestCountUuid = columns.find(
       (col) => col.title === '참석 인원 (본인 포함)',
@@ -340,12 +357,34 @@ export class WidgetService {
   }
 
   // 방명록 게시글 작성
-  async createComment(invitationId: string, body: CreateCommentDto) {
+  async createComment(
+    invitationId: string,
+    body: CreateCommentDto | Partial<CreateCommentDto>,
+    isFirstComment: boolean = false,
+  ) {
     const invitation = await this.invitationRepository.findOneBy({
       id: invitationId,
     });
     if (!invitation) {
       throw new NotFoundException('초대장을 찾을 수 없습니다!');
+    }
+
+    if (isFirstComment) {
+      const comment = this.commentRepository.create({
+        invitation: { id: invitationId },
+        id: uuid(),
+        author: '페이지시스터즈팀',
+        authorProfileImage: '\uD83D\uDC30',
+        body: '두 분의 결혼을 진심으로 축하드립니다 \uD83D\uDE0A\n행복하고 좋은 일만 가득하시길 바랄게요! ',
+        children: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        password: '1234',
+      });
+      await this.commentRepository.save(comment);
+      return {
+        id: comment.id,
+      };
     }
 
     const comment = this.commentRepository.create({
