@@ -75,4 +75,33 @@ export class AdminService {
 
     return template;
   }
+
+  // 템플릿 삭제
+  async deleteTemplate(id: string) {
+    const template = await this.templateRepository.findOne({
+      where: { id },
+    });
+
+    if (!template) throw new NotFoundException('템플릿 정보가 없습니다!');
+
+    await this.templateRepository.delete(id);
+
+    return true;
+  }
+
+  // 모든 청첩장 조회
+  async readAllInvitations() {
+    const invitations = await this.invitationService.readAllInvitations();
+
+    return invitations;
+  }
+
+  // 청첩장 조회
+  async readInvitation(id: string) {
+    const invitation = await this.invitationService.readInvitation(id);
+
+    if (!invitation) throw new NotFoundException('청첩장 정보가 없습니다!');
+
+    return invitation;
+  }
 }

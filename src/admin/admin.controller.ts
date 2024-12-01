@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { invitationExampleData } from 'src/invitation/data/invitation-example.data';
@@ -101,5 +110,34 @@ export class AdminController {
     @Body() dto: UpdateTemplateTitleDto,
   ) {
     return this.adminService.updateTemplateTitle(id, dto);
+  }
+
+  @Delete('templates/:id')
+  @ApiOperation({
+    summary: '템플릿 삭제',
+    responses: {
+      '200': {
+        description: '템플릿 삭제 성공',
+      },
+    },
+  })
+  async deleteTemplate(@Param('id') id: string) {
+    return this.adminService.deleteTemplate(id);
+  }
+
+  @Get('invitations')
+  @ApiOperation({
+    summary: '모든 청첩장 조회',
+  })
+  async readAllInvitations() {
+    return this.adminService.readAllInvitations();
+  }
+
+  @Get('invitations/:id')
+  @ApiOperation({
+    summary: '청첩장 조회',
+  })
+  async readInvitation(@Param('id') id: string) {
+    return this.adminService.readInvitation(id);
   }
 }

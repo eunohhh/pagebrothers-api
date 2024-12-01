@@ -79,6 +79,11 @@ export class InvitationService {
     private readonly widgetService: WidgetService,
   ) {}
 
+  // 모든 청첩장 조회
+  async readAllInvitations() {
+    return await this.invitationRepository.find({ relations });
+  }
+
   // 청첩장 조회
   async readInvitation(id: string) {
     const result = await this.invitationRepository.findOne({
