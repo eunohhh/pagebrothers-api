@@ -1,10 +1,12 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { invitationExampleData } from 'src/invitation/data/invitation-example.data';
 import { AdminService } from './admin.service';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { ReadTemplatesQueryDto } from './dto/read-template.dto';
+import { UpdateTemplateStageDto } from './dto/update-template-stage.dto';
+import { UpdateTemplateTitleDto } from './dto/update-template-title.dto';
 import { UpdateUserRoleDto } from './dto/update-user.dto';
 
 @Controller('admin')
@@ -67,5 +69,37 @@ export class AdminController {
   })
   async updateUserRole(@Body() dto: UpdateUserRoleDto) {
     return this.authService.updateUserRole(dto);
+  }
+
+  @Put('templates/:id/stage')
+  @ApiOperation({
+    summary: '템플릿 등급 업데이트',
+    responses: {
+      '200': {
+        description: '템플릿 등급 업데이트 성공',
+      },
+    },
+  })
+  async updateTemplateStage(
+    @Param('id') id: string,
+    @Body() dto: UpdateTemplateStageDto,
+  ) {
+    return this.adminService.updateTemplateStage(id, dto);
+  }
+
+  @Put('templates/:id/title')
+  @ApiOperation({
+    summary: '템플릿 타이틀 업데이트',
+    responses: {
+      '200': {
+        description: '템플릿 타이틀 업데이트 성공',
+      },
+    },
+  })
+  async updateTemplateTitle(
+    @Param('id') id: string,
+    @Body() dto: UpdateTemplateTitleDto,
+  ) {
+    return this.adminService.updateTemplateTitle(id, dto);
   }
 }

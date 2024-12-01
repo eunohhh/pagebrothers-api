@@ -4,6 +4,8 @@ import { InvitationService } from 'src/invitation/invitation.service';
 import { Repository } from 'typeorm';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { ReadTemplatesQueryDto } from './dto/read-template.dto';
+import { UpdateTemplateStageDto } from './dto/update-template-stage.dto';
+import { UpdateTemplateTitleDto } from './dto/update-template-title.dto';
 import { TemplateModel } from './entity/template.entity';
 
 @Injectable()
@@ -40,6 +42,36 @@ export class AdminService {
 
     const newTemplate = this.templateRepository.create(template);
     await this.templateRepository.save(newTemplate);
+
+    return template;
+  }
+
+  // 템플릿 등급 수정
+  async updateTemplateStage(id: string, dto: UpdateTemplateStageDto) {
+    const template = await this.templateRepository.findOne({
+      where: { id },
+    });
+
+    if (!template) throw new NotFoundException('템플릿 정보가 없습니다!');
+
+    template.stage = dto.stage;
+
+    await this.templateRepository.save(template);
+
+    return template;
+  }
+
+  // 템플릿 타이틀 수정
+  async updateTemplateTitle(id: string, dto: UpdateTemplateTitleDto) {
+    const template = await this.templateRepository.findOne({
+      where: { id },
+    });
+
+    if (!template) throw new NotFoundException('템플릿 정보가 없습니다!');
+
+    template.title = dto.title;
+
+    await this.templateRepository.save(template);
 
     return template;
   }
