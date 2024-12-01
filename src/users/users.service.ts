@@ -44,7 +44,7 @@ export class UsersService {
       provider: user.provider.toUpperCase() as Providers,
       providerId: user.providerId,
       profileImage: user.profileImage,
-      acceptMarketing: user.acceptMarketing ?? true,
+      acceptMarketing: Boolean(user.acceptMarketing),
     });
 
     return await this.usersRepository.save(userObject);
