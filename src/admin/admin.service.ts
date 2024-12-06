@@ -5,6 +5,7 @@ import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { ReadTemplatesQueryDto } from './dto/read-template.dto';
+import { UpdateTemplateOrderDto } from './dto/update-template-order.dto';
 import { UpdateTemplateStageDto } from './dto/update-template-stage.dto';
 import { UpdateTemplateTitleDto } from './dto/update-template-title.dto';
 import { TemplateModel } from './entity/template.entity';
@@ -24,6 +25,9 @@ export class AdminService {
       where: {
         stage: query.stage,
       },
+      order: {
+        number: 'ASC',
+      },
     });
 
     if (!templates) throw new NotFoundException('템플릿 정보가 없습니다!');
@@ -41,6 +45,13 @@ export class AdminService {
 
     const template = Object.assign(new TemplateModel(), invitation);
     template.stage = dto.stage;
+
+    const templates = await this.templateRepository.find({
+      where: {
+        stage: dto.stage,
+      },
+    });
+    template.number = templates.length;
 
     const newTemplate = this.templateRepository.create(template);
     await this.templateRepository.save(newTemplate);
@@ -149,5 +160,36 @@ export class AdminService {
   // admin에서 청첩장 복사
   async copyInvitation(id: string) {
     return this.invitationService.cloneInvitationByAdmin(id);
+  }
+
+  // 템플릿 순서 수정
+  async updateTemplateOrder(dto: UpdateTemplateOrderDto) {
+    const templates = await this.templateRepository.find({
+      where: {
+        stage: dto.stage,
+      },
+    });
+
+    if (!templates || templates.length === 0) {
+      throw new NotFoundException('템플릿 정보가 없습니다!');
+    }
+
+    // templates 배열을 dto.pairs의 순서대로 정렬
+    const updatedTemplates = dto.pairs.map((pair) => {
+      const foundTemplate = templates.find(
+        (template) => template.id === pair.id,
+      );
+      if (!foundTemplate) {
+        throw new NotFoundException(`템플릿 ID ${pair.id}를 찾을 수 없습니다.`);
+      }
+
+      // 정렬된 순서를 데이터베이스에 반영할 수 있도록 업데이트
+      foundTemplate.number = pair.order;
+      return foundTemplate;
+    });
+
+    await this.templateRepository.save(updatedTemplates);
+
+    return updatedTemplates;
   }
 }

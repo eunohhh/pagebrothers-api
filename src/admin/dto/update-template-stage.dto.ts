@@ -1,6 +1,6 @@
 import { IsEnum } from 'class-validator';
 
-enum TemplateStage {
+export enum TemplateStage {
   BEST = 'BEST',
   NORMAL = 'NORMAL',
 }

@@ -16,6 +16,7 @@ import { invitationExampleData } from 'src/invitation/data/invitation-example.da
 import { AdminService } from './admin.service';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { ReadTemplatesQueryDto } from './dto/read-template.dto';
+import { UpdateTemplateOrderDto } from './dto/update-template-order.dto';
 import { UpdateTemplateStageDto } from './dto/update-template-stage.dto';
 import { UpdateTemplateTitleDto } from './dto/update-template-title.dto';
 import { UpdateUserRoleDto } from './dto/update-user.dto';
@@ -241,5 +242,18 @@ export class AdminController {
   })
   async copyInvitation(@Param('id') id: string) {
     return this.adminService.copyInvitation(id);
+  }
+
+  @Put('templates/orders')
+  @ApiOperation({
+    summary: '템플릿 순서 수정',
+    responses: {
+      '200': {
+        description: '템플릿 순서 수정 성공',
+      },
+    },
+  })
+  async updateTemplateOrder(@Body() dto: UpdateTemplateOrderDto) {
+    return this.adminService.updateTemplateOrder(dto);
   }
 }
