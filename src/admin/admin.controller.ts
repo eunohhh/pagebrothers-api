@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
+import { ReqRes } from 'src/auth/decorator/req-res.decorator';
+import { RequestWithUser } from 'src/common/type/common.type';
 import { invitationExampleData } from 'src/invitation/data/invitation-example.data';
 import { AdminService } from './admin.service';
 import { CreateTemplateDto } from './dto/create-template.dto';
@@ -171,5 +173,35 @@ export class AdminController {
   })
   async searchUsers(@Query('query') query: string) {
     return this.adminService.searchUsers(query);
+  }
+
+  @Get('users/me')
+  @ApiOperation({
+    summary: '현재 어드민 유저 정보 가져오기',
+    responses: {
+      '200': {
+        description: '현재 어드민 유저 정보 가져오기 성공',
+        content: {
+          'application/json': {
+            example: {
+              users: [
+                {
+                  id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+                  name: 'string',
+                  email: 'string',
+                  profileImage: 'string',
+                  provider: 'KAKAO',
+                  providerId: 'string',
+                  isAdmin: true,
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+  })
+  async getCurrentAdminUser(@ReqRes() { req }: { req: RequestWithUser }) {
+    return this.adminService.getCurrentAdminUser(req.user.email);
   }
 }

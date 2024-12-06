@@ -25,6 +25,7 @@ export class UsersService {
       where: {
         email,
       },
+      select: ['id', 'name', 'email', 'profileImage', 'provider'],
     });
   }
 
@@ -89,6 +90,14 @@ export class UsersService {
           }),
         },
       ],
+    });
+  }
+
+  // 현재 어드민 유저 정보 가져오기
+  async getCurrentAdminUser(email: string) {
+    return this.usersRepository.findOne({
+      where: { email, isAdmin: true },
+      select: ['id', 'name', 'email', 'profileImage', 'provider'],
     });
   }
 }

@@ -115,4 +115,9 @@ export class AdminService {
 
     return users;
   }
+
+  // 현재 어드민 유저 정보 가져오기
+  async getCurrentAdminUser(email: string) {
+    return this.userService.getCurrentAdminUser(email);
+  }
 }
