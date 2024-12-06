@@ -140,4 +140,36 @@ export class AdminController {
   async readInvitation(@Param('id') id: string) {
     return this.adminService.readInvitation(id);
   }
+
+  @Get('users')
+  @ApiOperation({
+    summary: '유저 검색',
+    responses: {
+      '200': {
+        description: '유저 검색 성공',
+        content: {
+          'application/json': {
+            example: {
+              users: [
+                {
+                  id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+                  name: 'string',
+                  email: 'string',
+                  profileImage: 'string',
+                  provider: 'KAKAO',
+                  providerId: 'string',
+                  isAdmin: true,
+                  createdAt: '2024-12-06T11:06:54.247Z',
+                  updatedAt: '2024-12-06T11:06:54.247Z',
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+  })
+  async searchUsers(@Query('query') query: string) {
+    return this.adminService.searchUsers(query);
+  }
 }

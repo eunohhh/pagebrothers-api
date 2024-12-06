@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InvitationService } from 'src/invitation/invitation.service';
+import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { ReadTemplatesQueryDto } from './dto/read-template.dto';
@@ -14,6 +15,7 @@ export class AdminService {
     private readonly invitationService: InvitationService,
     @InjectRepository(TemplateModel)
     private readonly templateRepository: Repository<TemplateModel>,
+    private readonly userService: UsersService,
   ) {}
 
   // 템플릿 조회
@@ -103,5 +105,14 @@ export class AdminService {
     if (!invitation) throw new NotFoundException('청첩장 정보가 없습니다!');
 
     return invitation;
+  }
+
+  // 유저 검색 쿼리 기반
+  async searchUsers(query: string) {
+    const users = await this.userService.searchUsers(query);
+
+    if (!users) throw new NotFoundException('유저 정보가 없습니다!');
+
+    return users;
   }
 }

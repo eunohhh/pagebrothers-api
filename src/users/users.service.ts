@@ -5,7 +5,7 @@ import { UpdateUserRoleDto } from 'src/admin/dto/update-user.dto';
 import { RegisterUserDto } from 'src/auth/dto/register-user.dto';
 import { ENV_JWT_SECRET_KEY } from 'src/common/const/env-keys.const';
 import { Providers } from 'src/common/const/provider.const';
-import { Repository } from 'typeorm';
+import { ILike, Raw, Repository } from 'typeorm';
 import { UsersModel } from './entity/users.entity';
 
 @Injectable()
@@ -71,5 +71,24 @@ export class UsersService {
     );
 
     return true;
+  }
+
+  // 유저 검색 쿼리 기반
+  async searchUsers(query: string) {
+    if (!query.trim()) {
+      throw new Error('검색어는 빈 문자열일 수 없습니다.');
+    }
+
+    return this.usersRepository.find({
+      where: [
+        { name: ILike(`%${query}%`) },
+        { email: ILike(`%${query}%`) },
+        {
+          id: Raw((alias) => `CAST(${alias} AS TEXT) ILIKE :query`, {
+            query: `%${query}%`,
+          }),
+        },
+      ],
+    });
   }
 }

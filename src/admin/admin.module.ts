@@ -9,6 +9,7 @@ import { InvitationModel } from 'src/invitation/entity/invitation.entity';
 import { OrderModel } from 'src/invitation/entity/order.entity';
 import { VisitsCountModel } from 'src/invitation/entity/visits-count.entity';
 import { InvitationModule } from 'src/invitation/invitation.module';
+import { UsersModule } from 'src/users/users.module';
 import { CommentModel } from 'src/widget/entity/comment.entity';
 import { RsvpExtraFieldModel } from 'src/widget/entity/rsvp-extra-fields.entity';
 import { WidgetConfigModel } from 'src/widget/entity/widget-config.entity';
@@ -37,6 +38,7 @@ import { TemplateModel } from './entity/template.entity';
     WidgetModule,
     InvitationModule,
     AuthModule,
+    UsersModule,
   ],
   controllers: [AdminController],
   providers: [AdminService],
