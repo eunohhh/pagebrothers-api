@@ -120,4 +120,34 @@ export class AdminService {
   async getCurrentAdminUser(email: string) {
     return this.userService.getCurrentAdminUser(email);
   }
+
+  // 전체 사이트 상태들 가져오기
+  async getSiteStatus() {
+    const count = await this.invitationService.getTotalInvitationCount();
+    const userCount = await this.userService.getTotalUserCount();
+    const sharedCount =
+      await this.invitationService.getTotalSharedInvitationCount();
+    const sharedAndVisibleCount =
+      await this.invitationService.getTotalSharedAndVisibleInvitationCount();
+    const sharedThisMonthCount =
+      await this.invitationService.getTotalSharedInvitationCountThisMonth(true);
+    const sharedThisMonthNotVisibleCount =
+      await this.invitationService.getTotalSharedInvitationCountThisMonth(
+        false,
+      );
+
+    return {
+      totalInvitationCount: count,
+      totalUserCount: userCount,
+      totalSharedCount: sharedCount,
+      currentSharingCount: sharedAndVisibleCount,
+      sharedCountInThisMonth: sharedThisMonthCount,
+      invitationCountInThisMonth: sharedThisMonthNotVisibleCount,
+    };
+  }
+
+  // admin에서 청첩장 복사
+  async copyInvitation(id: string) {
+    return this.invitationService.cloneInvitationByAdmin(id);
+  }
 }

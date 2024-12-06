@@ -204,4 +204,42 @@ export class AdminController {
   async getCurrentAdminUser(@ReqRes() { req }: { req: RequestWithUser }) {
     return this.adminService.getCurrentAdminUser(req.user.email);
   }
+
+  @Get('statistics')
+  @ApiOperation({
+    summary: '사이트 통계 조회',
+    responses: {
+      '200': {
+        description: '사이트 통계 조회 성공',
+        content: {
+          'application/json': {
+            example: {
+              totalInvitationCount: 0,
+              totalUserCount: 0,
+              totalSharedCount: 0,
+              currentSharingCount: 0,
+              sharedCountInThisMonth: 0,
+              invitationCountInThisMonth: 0,
+            },
+          },
+        },
+      },
+    },
+  })
+  async getSiteStatistics() {
+    return this.adminService.getSiteStatus();
+  }
+
+  @Post('invitations/:id/duplicate')
+  @ApiOperation({
+    summary: '어드민에서 청첩장 복제',
+    responses: {
+      '200': {
+        description: '어드민에서 청첩장 복제 성공',
+      },
+    },
+  })
+  async copyInvitation(@Param('id') id: string) {
+    return this.adminService.copyInvitation(id);
+  }
 }

@@ -11,7 +11,7 @@ import { ColumnModel } from 'src/widget/entity/rsvp-column.entity';
 import { WidgetConfigModel } from 'src/widget/entity/widget-config.entity';
 import { WidgetItemModel } from 'src/widget/entity/widget-item.entity';
 import { WidgetService } from 'src/widget/widget.service';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, IsNull, MoreThanOrEqual, Not, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
 import { CreateOrderConfirmDto } from './dto/create-order-confirm.dto';
@@ -441,6 +441,31 @@ export class InvitationService {
     return newInvitation;
   }
 
+  // 어드민에서 청첩장 복제하기
+  async cloneInvitationByAdmin(id: string) {
+    const invitation = await this.invitationRepository.findOne({
+      where: { id },
+      relations: [...relations, 'user'],
+    });
+    if (!invitation) throw new NotFoundException('청첩장 정보가 없습니다!');
+
+    const newInvitation = await this.invitationRepository.create({
+      ...invitation,
+      share: null,
+      user: { id: invitation.user.id },
+      owners: invitation.owners,
+      widgets: invitation.widgets,
+      meta: invitation.meta,
+      design: invitation.design,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      id: uuid(),
+    });
+
+    await this.invitationRepository.save(newInvitation);
+    return newInvitation;
+  }
+
   // 위젯 생성
   async createWidget(id: string, body: CreateWidgetDto) {
     const invitation = await this.invitationRepository.findOne({
@@ -679,5 +704,36 @@ export class InvitationService {
       relations: [...relations, 'order'],
     });
     return newInvitation;
+  }
+
+  // 모든 청첩장 수 리턴
+  async getTotalInvitationCount() {
+    return this.invitationRepository.count();
+  }
+
+  // 모든 청첩장 중 shared 된 청첩장 수 리턴
+  async getTotalSharedInvitationCount() {
+    return this.invitationRepository.count({
+      where: { share: Not(IsNull()) },
+    });
+  }
+
+  // 모든 청첩장 중 shared 되고 공개된 청첩장 수 리턴
+  async getTotalSharedAndVisibleInvitationCount() {
+    return this.invitationRepository.count({
+      where: { share: { visible: true } },
+    });
+  }
+
+  // createAt 이 이번달 이면서 shared 된 청첩장 수 리턴
+  async getTotalSharedInvitationCountThisMonth(isVisible: boolean) {
+    return this.invitationRepository.count({
+      where: {
+        createdAt: MoreThanOrEqual(
+          new Date(new Date().setMonth(new Date().getMonth())),
+        ),
+        share: { visible: isVisible },
+      },
+    });
   }
 }

@@ -100,4 +100,9 @@ export class UsersService {
       select: ['id', 'name', 'email', 'profileImage', 'provider'],
     });
   }
+
+  // 모든 유저 수 리턴
+  async getTotalUserCount() {
+    return this.usersRepository.count();
+  }
 }
