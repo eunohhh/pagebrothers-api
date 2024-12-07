@@ -9,8 +9,10 @@ import { CommonService } from 'src/common/common.service';
 import { InvitationModel } from 'src/invitation/entity/invitation.entity';
 import { DataSource, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
+import { basicRsvpExtraFields } from './data/basic-rsvp.data';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateRsvpAnswerDto } from './dto/create-rsvp-answer.dto';
+import { CreateWidgetDto } from './dto/create-widget.dto';
 import { UpdateWidgetConfigDto } from './dto/update-widget-config.dto';
 import { CommentModel } from './entity/comment.entity';
 import { ColumnModel } from './entity/rsvp-column.entity';
@@ -18,6 +20,19 @@ import { RowValueModel } from './entity/rsvp-row-value.entity';
 import { RowModel } from './entity/rsvp-row.entity';
 import { WidgetConfigModel } from './entity/widget-config.entity';
 import { WidgetItemModel } from './entity/widget-item.entity';
+
+// 위젯 타입 제약 목록
+const SINGLE_INSTANCE_WIDGETS = [
+  'INTRO',
+  'RSVP',
+  'CALENDAR',
+  'LOCATION',
+  'GUESTBOOK',
+  'SHARE',
+  'EVENT_SEQUENCE',
+  'GREETING',
+  'CONGRATULATION',
+];
 
 @Injectable()
 export class WidgetService {
@@ -431,6 +446,149 @@ export class WidgetService {
     });
 
     return true;
+  }
+
+  // 위젯 생성(invitation service에서 사용)
+  async createWidget(invitation: InvitationModel, body: CreateWidgetDto) {
+    const existingWidgets = await this.widgetRepository.find({
+      where: { invitation: { id: invitation.id }, type: body.type },
+      relations: ['config'],
+    });
+
+    // 1. 기존 위젯 검색
+    const existingWidget = existingWidgets.find(
+      (widget) => widget.index === body.index,
+    );
+
+    // 2. 기존 위젯 처리
+    if (existingWidget) {
+      if (SINGLE_INSTANCE_WIDGETS.includes(existingWidget.type)) {
+        throw new BadRequestException(
+          `${existingWidget.type} 위젯은 하나만 존재할 수 있습니다!`,
+        );
+      }
+
+      return this.updateExistingWidget(existingWidget, body);
+    }
+
+    // 3. 인덱스 재정렬
+    await this.reorderWidgetIndexes(invitation.id, body.index);
+
+    // 4. 새 위젯 생성
+    const widgetId = uuid();
+    await this.createNewWidget(invitation, widgetId, body);
+    if (body.type === 'GUESTBOOK')
+      await this.createComment(invitation.id, {}, true);
+
+    // 5. 초대장 편집자 추가
+    await this.commonService.addInvitationEditor(
+      invitation.id,
+      invitation.user.id,
+    );
+
+    // 6. 결과 반환
+    return this.widgetRepository.findOne({
+      where: { id: widgetId },
+      relations: ['config'],
+    });
+  }
+
+  // 기존 위젯 업데이트
+  private async updateExistingWidget(existingWidget, body: CreateWidgetDto) {
+    // 위젯 설정 병합 및 저장
+    const updatedConfig = this.widgetConfigRepository.merge(
+      existingWidget.config,
+      body.config,
+    );
+    await this.widgetConfigRepository.save(updatedConfig);
+
+    // 위젯 병합 및 저장
+    const updatedWidget = this.widgetRepository.merge(existingWidget, body);
+    updatedWidget.config = updatedConfig;
+    await this.widgetRepository.save(updatedWidget);
+
+    return this.widgetRepository.findOne({
+      where: { id: updatedWidget.id },
+      relations: ['config'],
+    });
+  }
+
+  // 인덱스 재정렬
+  private async reorderWidgetIndexes(invitationId: string, newIndex: number) {
+    await this.widgetRepository
+      .createQueryBuilder()
+      .update()
+      .set({ index: () => '"index" + 1' }) // SQL 표현식으로 인덱스 증가
+      .where('"invitationId" = :invitationId', { invitationId }) // 해당 초대장에 속하는 위젯만
+      .andWhere('"index" >= :newIndex', { newIndex }) // 대상 인덱스 이상인 것만
+      .execute();
+  }
+
+  // 새 위젯 생성
+  private async createNewWidget(
+    invitation: InvitationModel,
+    widgetId: string,
+    body: CreateWidgetDto,
+  ) {
+    const existingColumns = await this.columnRepository.find();
+
+    const configId = uuid();
+    let config;
+    // rsvp 일 경우 추가적인 로직 작성 필요
+    if (body.type === 'RSVP') {
+      config = await this.widgetConfigRepository.create({
+        ...body.config,
+        id: configId,
+        extraFields:
+          body.config.extraFields?.length > 0
+            ? body.config.extraFields.map((field) => ({
+                ...field,
+                id: existingColumns.find(
+                  (column) => column.title === field.label,
+                )?.id,
+              }))
+            : basicRsvpExtraFields.map((field) => ({
+                ...field,
+                id: existingColumns.find(
+                  (column) => column.title === field.label,
+                )?.id,
+              })),
+      });
+    } else if (body.type === 'GREETING') {
+      // invitation.owners의 ID를 Set으로 변환
+      const ownerIds = new Set(invitation.owners.map((owner) => owner.id));
+      const invalidHosts = Object.keys(body.config.hosts).filter(
+        (hostId) => !ownerIds.has(hostId), // ownerIds에 없는 hostId 찾기
+      );
+
+      if (invalidHosts.length > 0) {
+        throw new BadRequestException(
+          `잘못된 혼주 정보입니다: ${invalidHosts.join(', ')}`,
+        );
+      }
+
+      config = await this.widgetConfigRepository.create({
+        ...body.config,
+        id: configId,
+      });
+    } else {
+      config = await this.widgetConfigRepository.create({
+        ...body.config,
+        id: configId,
+      });
+    }
+
+    await this.widgetConfigRepository.save(config);
+
+    const widget = this.widgetRepository.create({
+      id: widgetId,
+      config: { id: configId },
+      type: body.type,
+      index: body.index,
+      invitation: { id: invitation.id },
+    });
+
+    return this.widgetRepository.save(widget);
   }
 }
 
