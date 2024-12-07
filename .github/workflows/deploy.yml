@@ -45,7 +45,7 @@ jobs:
           aws elasticbeanstalk create-application-version \
             --application-name "pagebrothers-api" \
             --version-label $GITHUB_SHA \
-            --source-bundle S3Bucket="pagebrothers-file",S3Key="deploy.zip"
+            --source-bundle S3Bucket="pagebrothers-files",S3Key="deploy.zip"
 
           aws elasticbeanstalk update-environment \
             --application-name "pagebrothers-api" \
