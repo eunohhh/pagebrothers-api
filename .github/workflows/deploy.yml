@@ -34,7 +34,7 @@ jobs:
           AWS_REGION: ${{secrets.AWS_REGION}}
         run: |
           aws configure set region $AWS_REGION
-          aws s3 cp deploy.zip s3://pagebrothers-file/deploy.zip
+          aws s3 cp deploy.zip s3://pagebrothers-files/deploy.zip
 
       - name: Deploy to Elastic Beanstalk
         env:
