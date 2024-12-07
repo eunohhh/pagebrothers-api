@@ -85,6 +85,11 @@ import { WidgetModule } from './widget/widget.module';
           rejectUnauthorized: false,
         },
       }),
+      extra: {
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      },
     }),
     AuthModule,
     CommonModule,
