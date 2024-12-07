@@ -43,11 +43,11 @@ jobs:
           AWS_REGION: ${{secrets.AWS_REGION}}
         run: |
           aws elasticbeanstalk create-application-version \
-            --application-name "pagebrothers-api" \
+            --application-name "pagebrothers-api-2" \
             --version-label $GITHUB_SHA \
             --source-bundle S3Bucket="pagebrothers-files",S3Key="deploy.zip"
 
           aws elasticbeanstalk update-environment \
-            --application-name "pagebrothers-api" \
+            --application-name "pagebrothers-api-2" \
             --environment-name "pagebrothers-api-2-env" \
             --version-label $GITHUB_SHA
