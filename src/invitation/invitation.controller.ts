@@ -25,12 +25,14 @@ import { UpdateMetaDto } from './dto/update-meta.dto';
 import { UpdateOwnersDto } from './dto/update-owners.dto';
 import { InvitationService } from './invitation.service';
 
-@Controller('invitations')
+@Controller({
+  path: 'invitations',
+  version: '2',
+})
 @ApiTags('청첩장')
 @ApiBearerAuth()
-export class InvitationController {
+export class InvitationV2Controller {
   constructor(private readonly invitationService: InvitationService) {}
-
   @Get(':id')
   @ApiOperation({
     summary: '청첩장 조회',
@@ -88,15 +90,6 @@ export class InvitationController {
     @Body() body: CreateInvitationDto,
   ) {
     return await this.invitationService.createInvitation(req.user.id, body);
-  }
-
-  @Delete(':id')
-  @ApiOperation({
-    summary: '청첩장 삭제',
-    responses: { '200': { description: '청첩장 삭제 성공' } },
-  })
-  async deleteInvitation(@Param('id') id: string) {
-    return this.invitationService.deleteInvitation(id);
   }
 
   @Put(':id/event-info')
@@ -161,6 +154,144 @@ export class InvitationController {
   async putDesign(@Param('id') id: string, @Body() body: UpdateDesignDto) {
     return this.invitationService.updateDesign(id, body);
   }
+}
+
+@Controller('invitations')
+@ApiTags('청첩장')
+@ApiBearerAuth()
+export class InvitationController {
+  constructor(private readonly invitationService: InvitationService) {}
+
+  // @Get(':id')
+  // @ApiOperation({
+  //   summary: '청첩장 조회',
+  //   responses: {
+  //     '200': {
+  //       description: '청첩장 조회 성공',
+  //       content: {
+  //         'application/json': {
+  //           example: invitationExampleData,
+  //         },
+  //       },
+  //     },
+  //   },
+  // })
+  // async getInvitation(@Param('id') id: string) {
+  //   return this.invitationService.readInvitation(id);
+  // }
+
+  // @Get()
+  // @ApiOperation({
+  //   summary: '나의 청첩장 목록 조회',
+  //   responses: {
+  //     '200': {
+  //       description: '나의 청첩장 목록 조회 성공',
+  //       content: {
+  //         'application/json': {
+  //           example: {
+  //             items: [invitationExampleData],
+  //           },
+  //         },
+  //       },
+  //     },
+  //   },
+  // })
+  // async getInvitations(@ReqRes() { req }: { req: RequestWithUser }) {
+  //   return this.invitationService.readInvitations(req.user.id);
+  // }
+
+  // @Post()
+  // @ApiOperation({
+  //   summary: '청첩장 생성',
+  //   responses: {
+  //     '200': {
+  //       description: '청첩장 생성 성공',
+  //       content: {
+  //         'application/json': {
+  //           example: { id: '3fa85f64-5717-4562-b3fc-2c963f66afa6' },
+  //         },
+  //       },
+  //     },
+  //   },
+  // })
+  // async postInvitation(
+  //   @ReqRes() { req }: { req: RequestWithUser },
+  //   @Body() body: CreateInvitationDto,
+  // ) {
+  //   return await this.invitationService.createInvitation(req.user.id, body);
+  // }
+
+  @Delete(':id')
+  @ApiOperation({
+    summary: '청첩장 삭제',
+    responses: { '200': { description: '청첩장 삭제 성공' } },
+  })
+  async deleteInvitation(@Param('id') id: string) {
+    return this.invitationService.deleteInvitation(id);
+  }
+
+  // @Put(':id/event-info')
+  // @ApiOperation({
+  //   summary: '청첩장 일정 및 장소 수정',
+  //   responses: {
+  //     '200': {
+  //       description: '청첩장 일정 및 장소 수정 성공',
+  //       content: {
+  //         'application/json': {
+  //           example: invitationExampleData,
+  //         },
+  //       },
+  //     },
+  //   },
+  // })
+  // async putEventInfo(
+  //   @Param('id') id: string,
+  //   @Body() body: UpdateEventInfoDto,
+  // ) {
+  //   return this.invitationService.updateEventInfo(id, body);
+  // }
+
+  // @Put(':id/owners')
+  // @ApiOperation({
+  //   summary: '청첩장 혼주 정보 수정',
+  //   responses: {
+  //     '200': {
+  //       description: '청첩장 혼주 정보 수정 성공',
+  //       content: { 'application/json': { example: invitationExampleData } },
+  //     },
+  //   },
+  // })
+  // async putOwners(@Param('id') id: string, @Body() body: UpdateOwnersDto) {
+  //   return this.invitationService.updateOwners(id, body);
+  // }
+
+  // @Put(':id/meta')
+  // @ApiOperation({
+  //   summary: '청첩장 메타정보 수정',
+  //   responses: {
+  //     '200': {
+  //       description: '청첩장 메타정보 수정 성공',
+  //       content: { 'application/json': { example: invitationExampleData } },
+  //     },
+  //   },
+  // })
+  // async putMeta(@Param('id') id: string, @Body() body: UpdateMetaDto) {
+  //   return this.invitationService.updateMeta(id, body);
+  // }
+
+  // @Put(':id/design')
+  // @ApiOperation({
+  //   summary: '청첩장 디자인 수정',
+  //   responses: {
+  //     '200': {
+  //       description: '청첩장 디자인 수정 성공',
+  //       content: { 'application/json': { example: invitationExampleData } },
+  //     },
+  //   },
+  // })
+  // async putDesign(@Param('id') id: string, @Body() body: UpdateDesignDto) {
+  //   return this.invitationService.updateDesign(id, body);
+  // }
 
   @Put(':id/shares/visibility/on')
   @ApiOperation({
@@ -259,7 +390,10 @@ export class InvitationController {
   }
 }
 
-@Controller('share/keys')
+@Controller({
+  path: 'share/keys',
+  version: '2',
+})
 @ApiTags('청첩장/공유')
 @ApiBearerAuth()
 export class InvitationShareController {

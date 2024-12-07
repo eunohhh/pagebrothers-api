@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
+import { CommonModule } from 'src/common/common.module';
 import { ImageModel } from 'src/common/entity/image.entity';
 import { InvitationDesignModel } from 'src/invitation/entity/invitation-design.entity';
 import { InvitationMetaModel } from 'src/invitation/entity/invitation-meta.entity';
@@ -39,8 +40,10 @@ import { TemplateModel } from './entity/template.entity';
     InvitationModule,
     AuthModule,
     UsersModule,
+    forwardRef(() => CommonModule),
   ],
   controllers: [AdminController],
   providers: [AdminService],
+  exports: [AdminService],
 })
 export class AdminModule {}

@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsEnum } from 'class-validator';
+import { TemplateStage } from './create-template.dto';
 
 export class ReadTemplatesQueryDto {
-  @IsString()
+  @IsEnum(TemplateStage)
   @ApiProperty({ description: '템플릿 단계', example: 'BEST' })
-  stage: string;
+  stage: TemplateStage;
 }

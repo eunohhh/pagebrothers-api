@@ -7,7 +7,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { TemplateStage } from './update-template-stage.dto';
+import { TemplateStage } from './create-template.dto';
 
 class TemplateOrderPair {
   @IsString()

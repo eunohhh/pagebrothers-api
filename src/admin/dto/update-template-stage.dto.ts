@@ -1,9 +1,5 @@
 import { IsEnum } from 'class-validator';
-
-export enum TemplateStage {
-  BEST = 'BEST',
-  NORMAL = 'NORMAL',
-}
+import { TemplateStage } from './create-template.dto';
 
 export class UpdateTemplateStageDto {
   @IsEnum(TemplateStage)

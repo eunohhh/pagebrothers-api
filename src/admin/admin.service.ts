@@ -19,6 +19,13 @@ export class AdminService {
     private readonly userService: UsersService,
   ) {}
 
+  // 모든 템플릿 조회
+  async readAllTemplates() {
+    const templates = await this.templateRepository.find();
+
+    return templates;
+  }
+
   // 템플릿 조회
   async readTemplates(query: ReadTemplatesQueryDto) {
     const templates = await this.templateRepository.find({
