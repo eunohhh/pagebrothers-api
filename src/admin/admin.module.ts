@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
+import { CommonModule } from 'src/common/common.module';
 import { ImageModel } from 'src/common/entity/image.entity';
 import { InvitationDesignModel } from 'src/invitation/entity/invitation-design.entity';
 import { InvitationMetaModel } from 'src/invitation/entity/invitation-meta.entity';
@@ -9,6 +10,7 @@ import { InvitationModel } from 'src/invitation/entity/invitation.entity';
 import { OrderModel } from 'src/invitation/entity/order.entity';
 import { VisitsCountModel } from 'src/invitation/entity/visits-count.entity';
 import { InvitationModule } from 'src/invitation/invitation.module';
+import { UsersModule } from 'src/users/users.module';
 import { CommentModel } from 'src/widget/entity/comment.entity';
 import { RsvpExtraFieldModel } from 'src/widget/entity/rsvp-extra-fields.entity';
 import { WidgetConfigModel } from 'src/widget/entity/widget-config.entity';
@@ -37,8 +39,11 @@ import { TemplateModel } from './entity/template.entity';
     WidgetModule,
     InvitationModule,
     AuthModule,
+    UsersModule,
+    forwardRef(() => CommonModule),
   ],
   controllers: [AdminController],
   providers: [AdminService],
+  exports: [AdminService],
 })
 export class AdminModule {}

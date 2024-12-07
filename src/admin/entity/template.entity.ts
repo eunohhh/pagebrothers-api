@@ -107,4 +107,7 @@ export class TemplateModel extends BaseModel {
 
   @Column({ nullable: true })
   stage: string;
+
+  @Column({ nullable: true })
+  number: number;
 }

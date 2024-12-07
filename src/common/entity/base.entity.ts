@@ -1,4 +1,4 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Expose } from 'class-transformer';
 import {
   CreateDateColumn,
   PrimaryGeneratedColumn,
@@ -10,11 +10,11 @@ export abstract class BaseModel {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Exclude()
+  @Expose()
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Exclude()
+  @Expose()
   @CreateDateColumn()
   createdAt: Date;
 }

@@ -1,0 +1,122 @@
+import { MigrationInterface, QueryRunner } from "typeorm";
+
+export class Init1733570486555 implements MigrationInterface {
+    name = 'Init1733570486555'
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`CREATE TABLE "rsvp_extra_field_model" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "originalId" uuid NOT NULL DEFAULT uuid_generate_v4(), "label" character varying NOT NULL, "needResponseRejected" boolean NOT NULL, "options" text NOT NULL, "placeholder" character varying NOT NULL, "type" character varying NOT NULL, "configId" uuid, CONSTRAINT "PK_2860180501ca1e4976a079b09c6" PRIMARY KEY ("id", "originalId"))`);
+        await queryRunner.query(`CREATE TABLE "widget_config_model" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "title" character varying, "align" character varying, "hasICalButton" boolean, "differenceFormat" character varying, "eventName" character varying, "showTime" boolean, "layout" character varying, "buttonLabel" character varying, "accounts" jsonb, "items" jsonb, "layoutCarouselAlignKey" character varying, "greetingText" character varying, "nameLayoutKey" character varying, "layoutKey" character varying, "nameFormatKey" character varying, "withParent" boolean, "useFlower" boolean, "hosts" jsonb, "showDateTime" boolean, "subTitle" character varying, "customTextColor" character varying, "showEventInformation" boolean, "dateFormatKey" character varying, "exposeMap" boolean, "addressFormatKey" character varying, "trafficDescriptionItems" jsonb, "description" character varying, "widgetTitle" character varying, "size" character varying, "url" character varying, "aspectWidth" integer, "aspectHeight" integer, "text" character varying, "rejectLabel" character varying, "acceptLabel" character varying, "isFloating" boolean, "eventDate" character varying, CONSTRAINT "PK_05c75f0946c205bdfaa275a6618" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "image_model" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "url" character varying NOT NULL, "dimensions" jsonb NOT NULL, CONSTRAINT "PK_05aa8703890985ec0bb38428699" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."users_model_provider_enum" AS ENUM('KAKAO', 'GOOGLE')`);
+        await queryRunner.query(`CREATE TABLE "users_model" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "email" character varying NOT NULL, "name" character varying NOT NULL, "profileImage" character varying NOT NULL, "provider" "public"."users_model_provider_enum" NOT NULL, "providerId" character varying NOT NULL, "acceptMarketing" boolean NOT NULL, "isAdmin" boolean NOT NULL DEFAULT false, CONSTRAINT "UQ_d3129562d6ac1c574e5e909e4ed" UNIQUE ("email"), CONSTRAINT "PK_1355f66d5ebddb2449c566571c8" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "comment_model" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "author" character varying NOT NULL, "authorProfileImage" character varying NOT NULL, "body" character varying NOT NULL, "children" jsonb NOT NULL DEFAULT '[]', "password" character varying NOT NULL, "invitationId" uuid, CONSTRAINT "PK_8884e4d8e77aa48a6d7759606d2" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "column_model" ("id" character varying NOT NULL, "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "title" character varying NOT NULL, CONSTRAINT "PK_f70f8c154b33656159972603437" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "row_value_model" ("originalId" uuid NOT NULL DEFAULT uuid_generate_v4(), "id" text NOT NULL, "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "value" text NOT NULL, "rowId" character varying, "columnId" character varying, CONSTRAINT "PK_abb677e163fda6d259d0b1903ec" PRIMARY KEY ("originalId"))`);
+        await queryRunner.query(`CREATE TABLE "row_model" ("id" character varying NOT NULL, "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "no" SERIAL NOT NULL, "accepted" boolean DEFAULT false, "updated" boolean DEFAULT false, "sessionHash" character varying NOT NULL, "invitationId" uuid, CONSTRAINT "PK_538d25f220feb57727284800519" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "invitation_design_model" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "layoutType" character varying NOT NULL, "brandColor" character varying NOT NULL, "font" character varying NOT NULL, "textSize" character varying NOT NULL, "zoomDisabled" boolean NOT NULL, "invitation_id" uuid, CONSTRAINT "REL_8e0fb779a038df39ed201d8cba" UNIQUE ("invitation_id"), CONSTRAINT "PK_6aae2f191be54655329ecacb312" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "invitation_meta_model" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "thumbnailUrl" character varying NOT NULL, "thumbnailId" character varying NOT NULL, "title" character varying NOT NULL, "description" character varying NOT NULL, "kakaotalkThumbnailId" character varying NOT NULL, "kakaotalkTitle" character varying NOT NULL, "kakaotalkDescription" character varying NOT NULL, "kakaotalkUseLocationButton" boolean NOT NULL, "invitation_id" uuid, CONSTRAINT "REL_3d8ac561479394d98cac8a6f29" UNIQUE ("invitation_id"), CONSTRAINT "PK_aa7b7fe7baea4223f1d28bdc446" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "invitation_owner_model" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "role" character varying NOT NULL, "name" character varying NOT NULL, "invitationId" uuid, CONSTRAINT "PK_be0ea90c8514e1e17c28251b75d" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "order_model" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "plan" character varying NOT NULL, "orderName" character varying NOT NULL, "amount" integer NOT NULL, "paymentKey" character varying, "originAmount" integer NOT NULL, "expiredAt" TIMESTAMP, "couponCode" character varying, "isFreeOrder" boolean NOT NULL, "isPaymentCompleted" boolean, "invitationId" uuid, CONSTRAINT "REL_dbd3d7762139cec25c62311e6c" UNIQUE ("invitationId"), CONSTRAINT "PK_4462b145a741488a7627f9f8b9c" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "visits_count_model" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "count" integer NOT NULL DEFAULT '0', "invitation_id" uuid, CONSTRAINT "REL_0fde596213b0d13d2b7ea457b7" UNIQUE ("invitation_id"), CONSTRAINT "PK_01d2901c6f22d19fa41ce739a1c" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "invitation_model" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "title" character varying, "templateId" character varying, "eventAt" TIMESTAMP NOT NULL, "location" jsonb NOT NULL, "fullDaySchedule" boolean, "editingExpired" boolean, "share" jsonb, "customDomain" character varying, "userId" uuid, "metaId" uuid, "designId" uuid, CONSTRAINT "REL_fb0b5597596c83b9a079fd95ac" UNIQUE ("metaId"), CONSTRAINT "REL_13366c76867893d60ca038704f" UNIQUE ("designId"), CONSTRAINT "PK_9b1d2b2d2bf9ac15afcfe7fdc8a" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "widget_item_model" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "type" character varying NOT NULL, "index" integer, "configId" uuid, "invitationId" uuid, CONSTRAINT "REL_620e9f88bba8fdd76d4f5283e8" UNIQUE ("configId"), CONSTRAINT "PK_4da0d9cb3e03d42ed6f3992dae4" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "template_model" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "title" character varying, "templateId" character varying, "eventAt" TIMESTAMP NOT NULL, "location" jsonb NOT NULL, "fullDaySchedule" boolean, "editingExpired" boolean, "share" jsonb, "customDomain" character varying, "stage" character varying, "number" integer, "userId" uuid, "metaId" uuid, "designId" uuid, CONSTRAINT "REL_485638e6c0919a15b7a3615161" UNIQUE ("metaId"), CONSTRAINT "REL_eeb8eb35854ad7bdcf5d64b0ea" UNIQUE ("designId"), CONSTRAINT "PK_5d92c10c0ecea0e0d6423e176bc" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "widget_config_model_single_item_image_model" ("widgetConfigModelId" uuid NOT NULL, "imageModelId" uuid NOT NULL, CONSTRAINT "PK_80f96201f74e399c39cc62d37b7" PRIMARY KEY ("widgetConfigModelId", "imageModelId"))`);
+        await queryRunner.query(`CREATE INDEX "IDX_9b11fbe1f8e1d43bf26dacad4b" ON "widget_config_model_single_item_image_model" ("widgetConfigModelId") `);
+        await queryRunner.query(`CREATE INDEX "IDX_1d6f2cba700ba769a961df8f6a" ON "widget_config_model_single_item_image_model" ("imageModelId") `);
+        await queryRunner.query(`CREATE TABLE "widget_config_model_cover_image_image_model" ("widgetConfigModelId" uuid NOT NULL, "imageModelId" uuid NOT NULL, CONSTRAINT "PK_5f06106580f5a5463466b346106" PRIMARY KEY ("widgetConfigModelId", "imageModelId"))`);
+        await queryRunner.query(`CREATE INDEX "IDX_8099c48d09804dbf540420543a" ON "widget_config_model_cover_image_image_model" ("widgetConfigModelId") `);
+        await queryRunner.query(`CREATE INDEX "IDX_139855286f72f3356c2e710d5c" ON "widget_config_model_cover_image_image_model" ("imageModelId") `);
+        await queryRunner.query(`CREATE TABLE "invitation_model_images_image_model" ("invitationModelId" uuid NOT NULL, "imageModelId" uuid NOT NULL, CONSTRAINT "PK_41292194e884ee6af3c40bc59ce" PRIMARY KEY ("invitationModelId", "imageModelId"))`);
+        await queryRunner.query(`CREATE INDEX "IDX_17686139254c1592177d6cd4f7" ON "invitation_model_images_image_model" ("invitationModelId") `);
+        await queryRunner.query(`CREATE INDEX "IDX_05cc0f079f42f2bb1434d33ed6" ON "invitation_model_images_image_model" ("imageModelId") `);
+        await queryRunner.query(`CREATE TABLE "invitation_model_editors_users_model" ("invitationModelId" uuid NOT NULL, "usersModelId" uuid NOT NULL, CONSTRAINT "PK_f6c3be4c55813dca93365e79591" PRIMARY KEY ("invitationModelId", "usersModelId"))`);
+        await queryRunner.query(`CREATE INDEX "IDX_ca5ca25c175b15d0ae4517cb69" ON "invitation_model_editors_users_model" ("invitationModelId") `);
+        await queryRunner.query(`CREATE INDEX "IDX_ecadb8e93e355cd2bb41017fd5" ON "invitation_model_editors_users_model" ("usersModelId") `);
+        await queryRunner.query(`ALTER TABLE "rsvp_extra_field_model" ADD CONSTRAINT "FK_72b3e527099fe75d86ec87d445d" FOREIGN KEY ("configId") REFERENCES "widget_config_model"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "comment_model" ADD CONSTRAINT "FK_7303bcb9c29522bdea8c3841ec2" FOREIGN KEY ("invitationId") REFERENCES "invitation_model"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "row_value_model" ADD CONSTRAINT "FK_8e713c7931bef07a10bb05a95ab" FOREIGN KEY ("rowId") REFERENCES "row_model"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "row_value_model" ADD CONSTRAINT "FK_64a0d333e57e695e0818915cdeb" FOREIGN KEY ("columnId") REFERENCES "column_model"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "row_model" ADD CONSTRAINT "FK_abeeed363ca192bc91c1221d178" FOREIGN KEY ("invitationId") REFERENCES "invitation_model"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "invitation_design_model" ADD CONSTRAINT "FK_8e0fb779a038df39ed201d8cba6" FOREIGN KEY ("invitation_id") REFERENCES "invitation_model"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "invitation_meta_model" ADD CONSTRAINT "FK_3d8ac561479394d98cac8a6f292" FOREIGN KEY ("invitation_id") REFERENCES "invitation_model"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "invitation_owner_model" ADD CONSTRAINT "FK_4568e8b13e2777958b231e40c57" FOREIGN KEY ("invitationId") REFERENCES "invitation_model"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "order_model" ADD CONSTRAINT "FK_dbd3d7762139cec25c62311e6cc" FOREIGN KEY ("invitationId") REFERENCES "invitation_model"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "visits_count_model" ADD CONSTRAINT "FK_0fde596213b0d13d2b7ea457b77" FOREIGN KEY ("invitation_id") REFERENCES "invitation_model"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "invitation_model" ADD CONSTRAINT "FK_d8f57141aec2098a504a09273c1" FOREIGN KEY ("userId") REFERENCES "users_model"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "invitation_model" ADD CONSTRAINT "FK_fb0b5597596c83b9a079fd95aca" FOREIGN KEY ("metaId") REFERENCES "invitation_meta_model"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "invitation_model" ADD CONSTRAINT "FK_13366c76867893d60ca038704f5" FOREIGN KEY ("designId") REFERENCES "invitation_design_model"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "widget_item_model" ADD CONSTRAINT "FK_620e9f88bba8fdd76d4f5283e83" FOREIGN KEY ("configId") REFERENCES "widget_config_model"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "widget_item_model" ADD CONSTRAINT "FK_336712c66b9a64b43848995c451" FOREIGN KEY ("invitationId") REFERENCES "invitation_model"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "template_model" ADD CONSTRAINT "FK_0a3defd705e20a48eabc76b5873" FOREIGN KEY ("userId") REFERENCES "users_model"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "template_model" ADD CONSTRAINT "FK_485638e6c0919a15b7a36151618" FOREIGN KEY ("metaId") REFERENCES "invitation_meta_model"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "template_model" ADD CONSTRAINT "FK_eeb8eb35854ad7bdcf5d64b0eae" FOREIGN KEY ("designId") REFERENCES "invitation_design_model"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "widget_config_model_single_item_image_model" ADD CONSTRAINT "FK_9b11fbe1f8e1d43bf26dacad4bf" FOREIGN KEY ("widgetConfigModelId") REFERENCES "widget_config_model"("id") ON DELETE CASCADE ON UPDATE CASCADE`);
+        await queryRunner.query(`ALTER TABLE "widget_config_model_single_item_image_model" ADD CONSTRAINT "FK_1d6f2cba700ba769a961df8f6a5" FOREIGN KEY ("imageModelId") REFERENCES "image_model"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "widget_config_model_cover_image_image_model" ADD CONSTRAINT "FK_8099c48d09804dbf540420543a7" FOREIGN KEY ("widgetConfigModelId") REFERENCES "widget_config_model"("id") ON DELETE CASCADE ON UPDATE CASCADE`);
+        await queryRunner.query(`ALTER TABLE "widget_config_model_cover_image_image_model" ADD CONSTRAINT "FK_139855286f72f3356c2e710d5c3" FOREIGN KEY ("imageModelId") REFERENCES "image_model"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "invitation_model_images_image_model" ADD CONSTRAINT "FK_17686139254c1592177d6cd4f78" FOREIGN KEY ("invitationModelId") REFERENCES "invitation_model"("id") ON DELETE CASCADE ON UPDATE CASCADE`);
+        await queryRunner.query(`ALTER TABLE "invitation_model_images_image_model" ADD CONSTRAINT "FK_05cc0f079f42f2bb1434d33ed69" FOREIGN KEY ("imageModelId") REFERENCES "image_model"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "invitation_model_editors_users_model" ADD CONSTRAINT "FK_ca5ca25c175b15d0ae4517cb690" FOREIGN KEY ("invitationModelId") REFERENCES "invitation_model"("id") ON DELETE CASCADE ON UPDATE CASCADE`);
+        await queryRunner.query(`ALTER TABLE "invitation_model_editors_users_model" ADD CONSTRAINT "FK_ecadb8e93e355cd2bb41017fd5a" FOREIGN KEY ("usersModelId") REFERENCES "users_model"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`ALTER TABLE "invitation_model_editors_users_model" DROP CONSTRAINT "FK_ecadb8e93e355cd2bb41017fd5a"`);
+        await queryRunner.query(`ALTER TABLE "invitation_model_editors_users_model" DROP CONSTRAINT "FK_ca5ca25c175b15d0ae4517cb690"`);
+        await queryRunner.query(`ALTER TABLE "invitation_model_images_image_model" DROP CONSTRAINT "FK_05cc0f079f42f2bb1434d33ed69"`);
+        await queryRunner.query(`ALTER TABLE "invitation_model_images_image_model" DROP CONSTRAINT "FK_17686139254c1592177d6cd4f78"`);
+        await queryRunner.query(`ALTER TABLE "widget_config_model_cover_image_image_model" DROP CONSTRAINT "FK_139855286f72f3356c2e710d5c3"`);
+        await queryRunner.query(`ALTER TABLE "widget_config_model_cover_image_image_model" DROP CONSTRAINT "FK_8099c48d09804dbf540420543a7"`);
+        await queryRunner.query(`ALTER TABLE "widget_config_model_single_item_image_model" DROP CONSTRAINT "FK_1d6f2cba700ba769a961df8f6a5"`);
+        await queryRunner.query(`ALTER TABLE "widget_config_model_single_item_image_model" DROP CONSTRAINT "FK_9b11fbe1f8e1d43bf26dacad4bf"`);
+        await queryRunner.query(`ALTER TABLE "template_model" DROP CONSTRAINT "FK_eeb8eb35854ad7bdcf5d64b0eae"`);
+        await queryRunner.query(`ALTER TABLE "template_model" DROP CONSTRAINT "FK_485638e6c0919a15b7a36151618"`);
+        await queryRunner.query(`ALTER TABLE "template_model" DROP CONSTRAINT "FK_0a3defd705e20a48eabc76b5873"`);
+        await queryRunner.query(`ALTER TABLE "widget_item_model" DROP CONSTRAINT "FK_336712c66b9a64b43848995c451"`);
+        await queryRunner.query(`ALTER TABLE "widget_item_model" DROP CONSTRAINT "FK_620e9f88bba8fdd76d4f5283e83"`);
+        await queryRunner.query(`ALTER TABLE "invitation_model" DROP CONSTRAINT "FK_13366c76867893d60ca038704f5"`);
+        await queryRunner.query(`ALTER TABLE "invitation_model" DROP CONSTRAINT "FK_fb0b5597596c83b9a079fd95aca"`);
+        await queryRunner.query(`ALTER TABLE "invitation_model" DROP CONSTRAINT "FK_d8f57141aec2098a504a09273c1"`);
+        await queryRunner.query(`ALTER TABLE "visits_count_model" DROP CONSTRAINT "FK_0fde596213b0d13d2b7ea457b77"`);
+        await queryRunner.query(`ALTER TABLE "order_model" DROP CONSTRAINT "FK_dbd3d7762139cec25c62311e6cc"`);
+        await queryRunner.query(`ALTER TABLE "invitation_owner_model" DROP CONSTRAINT "FK_4568e8b13e2777958b231e40c57"`);
+        await queryRunner.query(`ALTER TABLE "invitation_meta_model" DROP CONSTRAINT "FK_3d8ac561479394d98cac8a6f292"`);
+        await queryRunner.query(`ALTER TABLE "invitation_design_model" DROP CONSTRAINT "FK_8e0fb779a038df39ed201d8cba6"`);
+        await queryRunner.query(`ALTER TABLE "row_model" DROP CONSTRAINT "FK_abeeed363ca192bc91c1221d178"`);
+        await queryRunner.query(`ALTER TABLE "row_value_model" DROP CONSTRAINT "FK_64a0d333e57e695e0818915cdeb"`);
+        await queryRunner.query(`ALTER TABLE "row_value_model" DROP CONSTRAINT "FK_8e713c7931bef07a10bb05a95ab"`);
+        await queryRunner.query(`ALTER TABLE "comment_model" DROP CONSTRAINT "FK_7303bcb9c29522bdea8c3841ec2"`);
+        await queryRunner.query(`ALTER TABLE "rsvp_extra_field_model" DROP CONSTRAINT "FK_72b3e527099fe75d86ec87d445d"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_ecadb8e93e355cd2bb41017fd5"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_ca5ca25c175b15d0ae4517cb69"`);
+        await queryRunner.query(`DROP TABLE "invitation_model_editors_users_model"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_05cc0f079f42f2bb1434d33ed6"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_17686139254c1592177d6cd4f7"`);
+        await queryRunner.query(`DROP TABLE "invitation_model_images_image_model"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_139855286f72f3356c2e710d5c"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_8099c48d09804dbf540420543a"`);
+        await queryRunner.query(`DROP TABLE "widget_config_model_cover_image_image_model"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_1d6f2cba700ba769a961df8f6a"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_9b11fbe1f8e1d43bf26dacad4b"`);
+        await queryRunner.query(`DROP TABLE "widget_config_model_single_item_image_model"`);
+        await queryRunner.query(`DROP TABLE "template_model"`);
+        await queryRunner.query(`DROP TABLE "widget_item_model"`);
+        await queryRunner.query(`DROP TABLE "invitation_model"`);
+        await queryRunner.query(`DROP TABLE "visits_count_model"`);
+        await queryRunner.query(`DROP TABLE "order_model"`);
+        await queryRunner.query(`DROP TABLE "invitation_owner_model"`);
+        await queryRunner.query(`DROP TABLE "invitation_meta_model"`);
+        await queryRunner.query(`DROP TABLE "invitation_design_model"`);
+        await queryRunner.query(`DROP TABLE "row_model"`);
+        await queryRunner.query(`DROP TABLE "row_value_model"`);
+        await queryRunner.query(`DROP TABLE "column_model"`);
+        await queryRunner.query(`DROP TABLE "comment_model"`);
+        await queryRunner.query(`DROP TABLE "users_model"`);
+        await queryRunner.query(`DROP TYPE "public"."users_model_provider_enum"`);
+        await queryRunner.query(`DROP TABLE "image_model"`);
+        await queryRunner.query(`DROP TABLE "widget_config_model"`);
+        await queryRunner.query(`DROP TABLE "rsvp_extra_field_model"`);
+    }
+
+}

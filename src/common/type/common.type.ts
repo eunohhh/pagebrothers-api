@@ -116,13 +116,13 @@ export interface IInvitation {
   meta: IInvitationMeta;
   share: IInvitationShare | null;
   images: Record<string, IInvitationImageData>;
-  editingExpired: boolean;
+  editingExpired: boolean; // 이 값은 eventAt 이 지난 경우에 자동으로 true 가 됨
 }
 
 /** INVITATION : SHARE */
 export interface IInvitationShare {
   shareKey: string;
-  visible: boolean;
+  visible: boolean; // OrderType 에 따라 다르게 설정됨 THREE_MONTH_SHARE 일 경우 3개월 뒤 만료(false), FOREVER_SHARE 일 경우 계속 true
 }
 
 /** INVITATION : META */

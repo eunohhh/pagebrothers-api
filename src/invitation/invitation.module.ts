@@ -19,6 +19,7 @@ import {
   InvitationController,
   InvitationOrderController,
   InvitationShareController,
+  InvitationV2Controller,
 } from './invitation.controller';
 import { InvitationService } from './invitation.service';
 
@@ -47,6 +48,7 @@ import { InvitationService } from './invitation.service';
     InvitationController,
     InvitationShareController,
     InvitationOrderController,
+    InvitationV2Controller,
   ],
   providers: [InvitationService],
 })

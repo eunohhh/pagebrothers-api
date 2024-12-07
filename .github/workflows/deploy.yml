@@ -1,0 +1,53 @@
+name: Deploy to AWS Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Zip Artifacts for Deployment
+        run: zip -r deploy.zip .
+
+      - name: Upload to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          AWS_REGION: ${{secrets.AWS_REGION}}
+        run: |
+          aws configure set region $AWS_REGION
+          aws s3 cp deploy.zip s3://pagebrothers-file/deploy.zip
+
+      - name: Deploy to Elastic Beanstalk
+        env:
+          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          AWS_REGION: ${{secrets.AWS_REGION}}
+        run: |
+          aws elasticbeanstalk create-application-version \
+            --application-name "pagebrothers-api" \
+            --version-label $GITHUB_SHA \
+            --source-bundle S3Bucket="pagebrothers-file",S3Key="deploy.zip"
+
+          aws elasticbeanstalk update-environment \
+            --application-name "pagebrothers-api" \
+            --environment-name "pagebrothers-api-2-env" \
+            --version-label $GITHUB_SHA

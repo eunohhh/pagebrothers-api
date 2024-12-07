@@ -9,10 +9,58 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
+import { AdminService } from 'src/admin/admin.service';
+import { TemplateStage } from 'src/admin/dto/create-template.dto';
+import { ReadTemplatesQueryDto } from 'src/admin/dto/read-template.dto';
+import { invitationExampleData } from 'src/invitation/data/invitation-example.data';
 import { CommonService } from './common.service';
 import { ImageQueryDto } from './dto/image-query.dto';
 import { TransactionInterceptor } from './interceptor/transaction.interceptor';
+
+@Controller({
+  path: '',
+  version: '2',
+})
+@ApiTags('템플릿')
+export class CommonV2Controller {
+  constructor(private readonly adminService: AdminService) {}
+
+  @Get('templates')
+  @ApiQuery({
+    name: 'stage',
+    enum: TemplateStage,
+  })
+  @ApiOperation({
+    summary: '모든 템플릿 조회',
+    responses: {
+      '200': {
+        description: '모든 템플릿 조회 성공',
+        content: {
+          'application/json': {
+            example: {
+              items: [invitationExampleData],
+            },
+          },
+        },
+      },
+    },
+  })
+  async getTemplates(@Query() query: ReadTemplatesQueryDto) {
+    const templates = await this.adminService.readAllTemplates();
+    const filteredTemplates = templates.filter(
+      (template) => template.stage === query.stage,
+    );
+
+    return filteredTemplates;
+  }
+}
 
 @Controller()
 @ApiTags('청첩장/첨부파일')

@@ -5,13 +5,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommonService } from 'src/common/common.service';
-import { basicRsvpExtraFields } from 'src/widget/data/basic-rsvp.data';
 import { CreateWidgetDto } from 'src/widget/dto/create-widget.dto';
-import { ColumnModel } from 'src/widget/entity/rsvp-column.entity';
-import { WidgetConfigModel } from 'src/widget/entity/widget-config.entity';
-import { WidgetItemModel } from 'src/widget/entity/widget-item.entity';
 import { WidgetService } from 'src/widget/widget.service';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, IsNull, MoreThanOrEqual, Not, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
 import { CreateOrderConfirmDto } from './dto/create-order-confirm.dto';
@@ -40,19 +36,6 @@ const relations = [
   // 'order',
 ];
 
-// 위젯 타입 제약 목록
-const SINGLE_INSTANCE_WIDGETS = [
-  'INTRO',
-  'RSVP',
-  'CALENDAR',
-  'LOCATION',
-  'GUESTBOOK',
-  'SHARE',
-  'EVENT_SEQUENCE',
-  'GREETING',
-  'CONGRATULATION',
-];
-
 @Injectable()
 export class InvitationService {
   constructor(
@@ -66,18 +49,17 @@ export class InvitationService {
     private readonly invitationDesignRepository: Repository<InvitationDesignModel>,
     @InjectRepository(VisitsCountModel)
     private readonly visitsCountRepository: Repository<VisitsCountModel>,
-    @InjectRepository(WidgetItemModel)
-    private readonly widgetRepository: Repository<WidgetItemModel>,
-    @InjectRepository(WidgetConfigModel)
-    private readonly widgetConfigRepository: Repository<WidgetConfigModel>,
-    @InjectRepository(ColumnModel)
-    private readonly columnRepository: Repository<ColumnModel>,
     @InjectRepository(OrderModel)
     private readonly orderRepository: Repository<OrderModel>,
     private readonly dataSource: DataSource,
     private readonly commonService: CommonService,
     private readonly widgetService: WidgetService,
   ) {}
+
+  // 모든 청첩장 조회
+  async readAllInvitations() {
+    return await this.invitationRepository.find({ relations });
+  }
 
   // 청첩장 조회
   async readInvitation(id: string) {
@@ -436,6 +418,31 @@ export class InvitationService {
     return newInvitation;
   }
 
+  // 어드민에서 청첩장 복제하기
+  async cloneInvitationByAdmin(id: string) {
+    const invitation = await this.invitationRepository.findOne({
+      where: { id },
+      relations: [...relations, 'user'],
+    });
+    if (!invitation) throw new NotFoundException('청첩장 정보가 없습니다!');
+
+    const newInvitation = await this.invitationRepository.create({
+      ...invitation,
+      share: null,
+      user: { id: invitation.user.id },
+      owners: invitation.owners,
+      widgets: invitation.widgets,
+      meta: invitation.meta,
+      design: invitation.design,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      id: uuid(),
+    });
+
+    await this.invitationRepository.save(newInvitation);
+    return newInvitation;
+  }
+
   // 위젯 생성
   async createWidget(id: string, body: CreateWidgetDto) {
     const invitation = await this.invitationRepository.findOne({
@@ -444,124 +451,7 @@ export class InvitationService {
     });
     if (!invitation) throw new NotFoundException('청첩장 정보가 없습니다!');
 
-    const existingWidgets = await this.widgetRepository.find({
-      where: { invitation: { id: invitation.id }, type: body.type },
-      relations: ['config'],
-    });
-
-    // 1. 기존 위젯 검색
-    const existingWidget = existingWidgets.find(
-      (widget) => widget.index === body.index,
-    );
-
-    // 2. 기존 위젯 처리
-    if (existingWidget) {
-      if (SINGLE_INSTANCE_WIDGETS.includes(existingWidget.type)) {
-        throw new BadRequestException(
-          `${existingWidget.type} 위젯은 하나만 존재할 수 있습니다!`,
-        );
-      }
-
-      return this.updateExistingWidget(existingWidget, body);
-    }
-
-    // 3. 인덱스 재정렬
-    await this.reorderWidgetIndexes(invitation.id, body.index);
-
-    // 4. 새 위젯 생성
-    const widgetId = uuid();
-    await this.createNewWidget(invitation.id, widgetId, body);
-    if (body.type === 'GUESTBOOK')
-      await this.widgetService.createComment(invitation.id, {}, true);
-
-    // 5. 초대장 편집자 추가
-    await this.commonService.addInvitationEditor(id, invitation.user.id);
-
-    // 6. 결과 반환
-    return this.widgetRepository.findOne({
-      where: { id: widgetId },
-      relations: ['config'],
-    });
-  }
-
-  // 기존 위젯 업데이트
-  private async updateExistingWidget(existingWidget, body: CreateWidgetDto) {
-    // 위젯 설정 병합 및 저장
-    const updatedConfig = this.widgetConfigRepository.merge(
-      existingWidget.config,
-      body.config,
-    );
-    await this.widgetConfigRepository.save(updatedConfig);
-
-    // 위젯 병합 및 저장
-    const updatedWidget = this.widgetRepository.merge(existingWidget, body);
-    updatedWidget.config = updatedConfig;
-    await this.widgetRepository.save(updatedWidget);
-
-    return this.widgetRepository.findOne({
-      where: { id: updatedWidget.id },
-      relations: ['config'],
-    });
-  }
-
-  // 새 위젯 생성
-  private async createNewWidget(
-    invitationId: string,
-    widgetId: string,
-    body: CreateWidgetDto,
-  ) {
-    const existingColumns = await this.columnRepository.find();
-
-    const configId = uuid();
-    const config =
-      body.type === 'RSVP'
-        ? await this.widgetConfigRepository.create({
-            ...body.config,
-            id: configId,
-            extraFields:
-              body.config.extraFields?.length > 0
-                ? body.config.extraFields.map((field) => ({
-                    ...field,
-                    id: existingColumns.find(
-                      (column) => column.title === field.label,
-                    )?.id,
-                  }))
-                : basicRsvpExtraFields.map((field) => ({
-                    ...field,
-                    id: existingColumns.find(
-                      (column) => column.title === field.label,
-                    )?.id,
-                  })),
-          })
-        : await this.widgetConfigRepository.create({
-            ...body.config,
-            id: configId,
-          });
-
-    //rsvp 일 경우 추가적인 로직 작성 필요
-
-    await this.widgetConfigRepository.save(config);
-
-    const widget = this.widgetRepository.create({
-      id: widgetId,
-      config: { id: configId },
-      type: body.type,
-      index: body.index,
-      invitation: { id: invitationId },
-    });
-
-    return this.widgetRepository.save(widget);
-  }
-
-  // 인덱스 재정렬
-  private async reorderWidgetIndexes(invitationId: string, newIndex: number) {
-    await this.widgetRepository
-      .createQueryBuilder()
-      .update()
-      .set({ index: () => '"index" + 1' }) // SQL 표현식으로 인덱스 증가
-      .where('"invitationId" = :invitationId', { invitationId }) // 해당 초대장에 속하는 위젯만
-      .andWhere('"index" >= :newIndex', { newIndex }) // 대상 인덱스 이상인 것만
-      .execute();
+    return this.widgetService.createWidget(invitation, body);
   }
 
   // 공유키로 청첩장 조회
@@ -674,5 +564,36 @@ export class InvitationService {
       relations: [...relations, 'order'],
     });
     return newInvitation;
+  }
+
+  // 모든 청첩장 수 리턴
+  async getTotalInvitationCount() {
+    return this.invitationRepository.count();
+  }
+
+  // 모든 청첩장 중 shared 된 청첩장 수 리턴
+  async getTotalSharedInvitationCount() {
+    return this.invitationRepository.count({
+      where: { share: Not(IsNull()) },
+    });
+  }
+
+  // 모든 청첩장 중 shared 되고 공개된 청첩장 수 리턴
+  async getTotalSharedAndVisibleInvitationCount() {
+    return this.invitationRepository.count({
+      where: { share: { visible: true } },
+    });
+  }
+
+  // createAt 이 이번달 이면서 shared 된 청첩장 수 리턴
+  async getTotalSharedInvitationCountThisMonth(isVisible: boolean) {
+    return this.invitationRepository.count({
+      where: {
+        createdAt: MoreThanOrEqual(
+          new Date(new Date().setMonth(new Date().getMonth())),
+        ),
+        share: { visible: isVisible },
+      },
+    });
   }
 }
