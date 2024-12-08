@@ -64,5 +64,5 @@ postgres-data/
 
 
 # Elastic Beanstalk Extensions
-.ebextensions/*
-.ebextensions/
+# .ebextensions/*
+# .ebextensions/
