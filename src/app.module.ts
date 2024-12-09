@@ -50,7 +50,7 @@ import { WidgetModule } from './widget/widget.module';
     }),
     PassportModule.register({ defaultStrategy: 'kakao' }),
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      envFilePath: process.env.ENV_ENV !== 'production' ? '.env' : undefined,
       isGlobal: true,
     }),
     TypeOrmModule.forRoot({
